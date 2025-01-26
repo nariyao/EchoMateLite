@@ -7,5 +7,8 @@
   },
   "author": "Amit Narayan",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "aws-sdk": "^2.1692.0"
+  }
 }
