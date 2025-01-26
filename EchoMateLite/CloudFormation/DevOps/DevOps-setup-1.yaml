@@ -1,0 +1,163 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  
+Parameters:
+   
+Resources:
+  emlDevopsVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: eml-devops-vpc
+        - Key: Environment
+          Value: DevOps
+        - Key: Owner
+          Value: EML
+
+  emlDevopsSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: emlDevopsVpc
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: us-east-1a
+      Tags:
+        - Key: Name
+          Value: eml-devops-subnet1
+        - Key: Environment
+          Value: DevOps
+        - Key: Owner
+          Value: EML
+  
+  emlDevopsSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: 
+        Ref: emlDevopsVpc
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: us-east-1b
+      Tags:
+        - Key: Name
+          Value: eml-devops-subnet2
+        - Key: Environment
+          Value: DevOps
+        - Key: Owner
+          Value: EML
+
+  emlDevopsInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: eml-devops-internet-gateway
+        - Key: Environment
+          Value: DevOps
+        - Key: Owner
+          Value: EML
+
+  emlDevopsVpcAttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: 
+        Ref: emlDevopsVpc
+      InternetGatewayId: 
+        Ref: emlDevopsInternetGateway
+  
+  emlDevopsRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: 
+        Ref: emlDevopsVpc
+      Tags:
+        - Key: Name
+          Value: eml-devops-route-table
+        - Key: Environment
+          Value: DevOps
+        - Key: Owner
+          Value: EML
+
+  emlDevopsRouteTableInternetGateway:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: 
+        Ref: emlDevopsRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: 
+        Ref: emlDevopsInternetGateway
+
+  emlDevopsSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: 
+        Ref: emlDevopsSubnet1
+      RouteTableId: 
+        Ref: emlDevopsRouteTable
+
+  emlDevopsSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: 
+        Ref: emlDevopsSubnet2
+      RouteTableId: 
+        Ref: emlDevopsRouteTable
+
+  emlDevopsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      VpcId: 
+        Ref: emlDevopsVpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        # Allow traffic on port 8080 for Jenkins
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: eml-devops-security-group
+        - Key: Environment
+          Value: DevOps
+        - Key: Owner
+          Value: EML
+
+Outputs:
+  VPCId:
+    Description: VPC ID
+    Value: 
+      Ref: emlDevopsVpc
+    Export:
+      Name: 
+        Fn::Sub: DevOps-VPCId
+
+  Subnet1Id:
+    Description: Subnet1 ID
+    Value: 
+      Ref: emlDevopsSubnet1
+    Export:
+      Name: 
+        Fn::Sub: DevOps-Subnet1Id
+
+  Subnet2Id:
+    Description: Subnet2 ID
+    Value: 
+     Ref: emlDevopsSubnet2
+    Export:
+      Name: 
+        Fn::Sub: DevOps-Subnet2Id
+
+  SecurityGroupId:
+    Description: Security Group ID
+    Value: 
+      Ref: emlDevopsSecurityGroup
+    Export:
+      Name: 
+        Fn::Sub: DevOps-SecurityGroupId
