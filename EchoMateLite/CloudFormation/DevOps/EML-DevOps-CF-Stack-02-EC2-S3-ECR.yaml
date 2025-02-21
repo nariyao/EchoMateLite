@@ -1,0 +1,239 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: DevOps infrastructure setup for EchoMateLite project
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: EC2 Configuration
+        Parameters:
+          - InstanceType
+          - KeyName
+          - ImageId
+          - Environment
+          - ProjectPrefix
+    ParameterLabels:
+      InstanceType:
+        default: Jenkins Instance Type
+      KeyName:
+        default: SSH Key Pair
+      ImageId:
+        default: Amazon Machine Image ID
+      Environment:
+        default: Environment
+      ProjectPrefix:
+        default: Project Prefix
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Environment name for resource tagging
+  ProjectPrefix:
+    Type: String
+    Default: eml
+    Description: Project prefix for resource naming
+  InstanceType:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+    Description: The instance type for Jenkins master instance.
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: eml-devops-key
+    Description: The EC2 key pair for Jenkins master instance.
+  ImageId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+    Description: The AMI ID for Jenkins master instance.
+
+Resources:
+  # Jenkins master EC2 instance
+  emlJenkinsEC2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref ImageId
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      IamInstanceProfile: !Sub ${ProjectPrefix}-jenkins-instance-profile-${Environment}
+      UserData: !Base64
+        Fn::Sub: |
+          #!/bin/bash -xe
+          # Update system and install dependencies
+          yum update -y
+          amazon-linux-extras install -y java-openjdk17
+          yum install -y git docker aws-cli
+          # Install Jenkins
+          wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+          rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+          yum install -y jenkins
+          systemctl enable jenkins
+          systemctl start jenkins
+          # Configure Docker
+          systemctl enable docker
+          systemctl start docker
+          usermod -aG docker ec2-user
+          usermod -aG docker jenkins
+          # Install Node.js using nvm
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+          . ~/.nvm/nvm.sh
+          nvm install 22
+          nvm alias default 22
+          # Configure Jenkins to use Node.js
+          echo 'export PATH=$PATH:~/.nvm/versions/node/v22/bin' >> /etc/sysconfig/jenkins
+          systemctl restart jenkins
+          # Install AWS CloudWatch Agent
+          yum install -y amazon-cloudwatch-agent
+          /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/AmazonCloudWatch/JenkinsConfig
+
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 30
+            VolumeType: gp3
+            DeleteOnTermination: true
+            Encrypted: true
+            Iops: 3000
+            Throughput: 125
+
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          DeleteOnTermination: true
+          SubnetId: !ImportValue DevOps-PublicSubnet1Id
+          GroupSet:
+            - !ImportValue DevOps-SecurityGroupId
+
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectPrefix}-jenkins-ec2-${Environment}
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: EML
+        - Key: Backup
+          Value: true
+
+  # Jenkins master backup EBS volume
+  emlJenkinsEbsVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      Size: 30
+      VolumeType: gp3
+      Encrypted: true
+      Iops: 3000
+      Throughput: 125
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectPrefix}-jenkins-ebs-${Environment}
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: EML
+        - Key: Backup
+          Value: true
+
+  # Attach backup EBS volume to Jenkins master instance
+  emlJenkinsEbsVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: /dev/xvdf
+      InstanceId: !Ref emlJenkinsEC2
+      VolumeId: !Ref emlJenkinsEbsVolume
+
+  # Jenkins master Elastic IP
+  emlJenkinsEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectPrefix}-jenkins-eip-${Environment}
+        - Key: Environment
+          Value: !Ref Environment
+
+  emlJenkinsEIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      EIP: !Ref emlJenkinsEIP
+      InstanceId: !Ref emlJenkinsEC2
+
+  emlDevopsArtifactsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub ${ProjectPrefix}-artifacts-${AWS::AccountId}-${AWS::Region}-${Environment}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: AutoDeleteOldArtifacts
+            Status: Enabled
+            ExpirationInDays: 90
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+
+  EchoMateLiteRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${ProjectPrefix}-echomate-lite-${Environment}
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      EncryptionConfiguration:
+        EncryptionType: AES256
+      ImageTagMutability: IMMUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 30 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 30
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
+Outputs:
+  JenkinsURL:
+    Description: Jenkins URL
+    Value: !Sub http://${emlJenkinsEIP}:8080
+    Export:
+      Name: !Sub ${ProjectPrefix}-jenkins-url-${Environment}
+  JenkinsInitialPassword:
+    Description: Command to get Jenkins initial admin password
+    Value: !Sub sudo cat /var/lib/jenkins/secrets/initialAdminPassword on ${emlJenkinsEC2}
+  ArtifactsBucketName:
+    Description: S3 bucket for build artifacts
+    Value: !Ref emlDevopsArtifactsBucket
+    Export:
+      Name: !Sub ${ProjectPrefix}-artifacts-bucket-${Environment}
+  EcrRepositoryURI:
+    Description: ECR Repository URI
+    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EchoMateLiteRepository}
+    Export:
+      Name: !Sub ${ProjectPrefix}-ecr-repo-uri-${Environment}

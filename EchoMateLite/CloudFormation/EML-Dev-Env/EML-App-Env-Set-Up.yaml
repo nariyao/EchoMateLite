@@ -1,0 +1,243 @@
+# CloudFormation template for VPC infrastructure
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "VPC with public and private subnets, IGW, route tables, security groups and load balancer"
+
+Parameters:
+  Enviroment:
+    Type: String
+    Default: Dev
+
+  ProjectPrefix:
+    Type: String
+    Default: eml
+
+Resources:
+  # VPC Definition
+  EmlVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.1.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: EML_VPC
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+  # Internet Gateway
+  EmlInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: EML Internet Gateway
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+  # Attach Internet Gateway to VPC
+  EmlAttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref EmlVPC
+      InternetGatewayId: !Ref EmlInternetGateway
+
+  # Public Subnet 1
+  EmlPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EmlVPC
+      CidrBlock: 10.1.1.0/24
+      Tags:
+        - Key: Name
+          Value: EML Public Subnet 1
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+  # Public Subnet 2
+  EmlPublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EmlVPC
+      CidrBlock: 10.1.2.0/24
+      Tags:
+        - Key: Name
+          Value: Public Subnet 2
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+  # Private Subnet 1
+  EmlPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EmlVPC
+      CidrBlock: 10.1.3.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      Tags:
+        - Key: Name
+          Value: Private Subnet 1
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+  # Private Subnet 2
+  EmlPrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EmlVPC
+      CidrBlock: 10.1.4.0/24
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      Tags:
+        - Key: Name
+          Value: Private Subnet 2
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+  # Public Route Table
+  EmlPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EmlVPC
+      Tags:
+        - Key: Name
+          Value: Public Route Table
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+  # Private Route Table
+  EmlPrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EmlVPC
+      Tags:
+        - Key: Name
+          Value: Private Route Table
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+  # Public Route
+  EmlPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: EmlInternetGateway
+    Properties:
+      RouteTableId: !Ref EmlPublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref EmlInternetGateway
+
+  # Associate Public Subnet 1 with Public Route Table
+  EmlPublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EmlPublicSubnet1
+      RouteTableId: !Ref EmlPublicRouteTable
+
+  # Associate Public Subnet 2 with Public Route Table
+  EmlPublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EmlPublicSubnet2
+      RouteTableId: !Ref EmlPublicRouteTable
+
+  # Associate Private Subnet 1 with Private Route Table
+  EmlPrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EmlPrivateSubnet1
+      RouteTableId: !Ref EmlPrivateRouteTable
+
+  # Associate Private Subnet 2 with Private Route Table
+  EmlPrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref EmlPrivateSubnet2
+      RouteTableId: !Ref EmlPrivateRouteTable
+
+  # Security Group for HTTP and HTTPS
+  EmlWebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP/HTTPS inbound traffic
+      VpcId: !Ref EmlVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+  # Application Load Balancer
+  EmlApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+        - !Ref EmlPublicSubnet1
+        - !Ref EmlPublicSubnet2
+      SecurityGroups:
+        - !Ref EmlWebSecurityGroup
+      Tags:
+        - Key: Name
+          Value: MyALB
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
+Outputs:
+  EmlVPCId:
+    Description: VPC ID
+    Value: !Ref EmlVPC
+    Export:
+      Name: !Sub ${ProjectPrefix}-EmlVPCId-${Enviroment}
+
+  EmlPublicSubnet1:
+    Description: Public Subnet 1 ID
+    Value: !Ref EmlPublicSubnet1
+    Export:
+      Name: !Sub ${ProjectPrefix}-EmlPublicSubnet1-${Enviroment}
+
+  EmlPublicSubnet2:
+    Description: Public Subnet 2 ID
+    Value: !Ref EmlPublicSubnet2
+    Export:
+      Name: !Sub ${ProjectPrefix}-EmlPublicSubnet2-${Enviroment}
+
+  EmlPrivateSubnet1:
+    Description: Private Subnet 1 ID
+    Value: !Ref EmlPrivateSubnet1
+    Export:
+      Name: !Sub ${ProjectPrefix}-EmlPrivateSubnet1-${Enviroment}
+
+  EmlPrivateSubnet2:
+    Description: Private Subnet 2 ID
+    Value: !Ref EmlPrivateSubnet2
+    Export:
+      Name: !Sub ${ProjectPrefix}-EmlPrivateSubnet2-${Enviroment}
+
+  EmlLoadBalancerDNS:
+    Description: DNS name of the load balancer
+    Value: !GetAtt EmlApplicationLoadBalancer.DNSName
+    Export:
+      Name: !Sub ${ProjectPrefix}-EmlLoadBalancerDNS-${Enviroment}

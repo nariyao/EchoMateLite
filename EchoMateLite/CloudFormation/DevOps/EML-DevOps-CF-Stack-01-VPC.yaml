@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: |
+  Creates VPC infrastructure for EchoMateLite DevOps environment including:
+  - VPC with 2 public subnets across 2 AZs
+  - Internet Gateway and Route Table
+  - Security Group for Jenkins access
+
+Parameters:
+  Environment:
+    Type: String
+    Default: DevOps
+    Description: Environment name for resource tagging
+
+  VpcCidr:
+    Type: String
+    Default: 10.0.0.0/16
+    Description: CIDR block for VPC
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+
+  ProjectName:
+    Type: String
+    Default: eml
+    Description: Project identifier for resource naming
+
+Mappings:
+  SubnetConfig:
+    SubnetA:
+      CIDR: 10.0.1.0/24
+      AZ: us-east-1a
+    SubnetB:
+      CIDR: 10.0.2.0/24
+      AZ: us-east-1b
+
+Resources:
+  # DevOps VPC
+  emlDevopsVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: ${ProjectName}-devops-vpc
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: ${ProjectName}
+  # DevOps public subnet 1
+  emlDevopsPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref emlDevopsVpc
+      CidrBlock: !FindInMap [SubnetConfig, SubnetA, CIDR]
+      AvailabilityZone: !FindInMap [SubnetConfig, SubnetA, AZ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: ${ProjectName}-devops-subnet1
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: ${ProjectName}
+  # Devops Public subnets 2
+  emlDevopsPublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref emlDevopsVpc
+      CidrBlock: !FindInMap [SubnetConfig, SubnetB, CIDR]
+      AvailabilityZone: !FindInMap [SubnetConfig, SubnetB, AZ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: ${ProjectName}-devops-subnet2
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: ${ProjectName}
+
+  # EML devops Internet Gateway and Route Table
+  emlDevopsInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: ${ProjectName}-devops-igw
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: ${ProjectName}
+  # Attach Internet Gateway to VPC
+  emlDevopsVpcAttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref emlDevopsVpc
+      InternetGatewayId: !Ref emlDevopsInternetGateway
+  # EML devops Route Table
+  emlDevopsPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref emlDevopsVpc
+      Tags:
+        - Key: Name
+          Value: ${ProjectName}-devops-rt
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref ProjectName
+  # EML devops Route Table Internet Gateway
+  emlDevopsPublicRouteTableInternetGateway:
+    Type: AWS::EC2::Route
+    DependsOn: emlDevopsVpcAttachGateway
+    Properties:
+      RouteTableId: !Ref emlDevopsPublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref emlDevopsInternetGateway
+  # EML devops Subnet Route Table Association
+  emlDevopsPublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref emlDevopsPublicSubnet1
+      RouteTableId: !Ref emlDevopsPublicRouteTable
+  # EML devops Subnet Route Table Association
+  emlDevopsPublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref emlDevopsPublicSubnet2
+      RouteTableId: !Ref emlDevopsPublicRouteTable
+  # EML devops Security Group for Jenkins server
+  emlDevopsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Jenkins server
+      VpcId: !Ref emlDevopsVpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+          Description: Allow SSH access
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+          Description: Allow Jenkins web access
+      Tags:
+        - Key: Name
+          Value: ${ProjectName}-devops-sg
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref ProjectName
+
+Outputs:
+  # Export VPC ID, Subnet IDs and Security Group ID
+  VPCId:
+    Description: VPC ID
+    Value: !Ref emlDevopsVpc
+    Export:
+      Name: !Sub DevOps-VPCId
+
+  PublicSubnet1Id:
+    Description: Public Subnet 1 ID
+    Value: !Ref emlDevopsPublicSubnet1
+    Export:
+      Name: !Sub DevOps-PublicSubnet1Id
+
+  PublicSubnet2Id:
+    Description: Public Subnet 2 ID
+    Value: !Ref emlDevopsPublicSubnet2
+    Export:
+      Name: !Sub DevOps-PublicSubnet2Id
+
+  SecurityGroupId:
+    Description: Security Group ID for Jenkins
+    Value: !Ref emlDevopsSecurityGroup
+    Export:
+      Name: !Sub DevOps-SecurityGroupId

@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates IAM roles and policies for EchoMateLite (EML) resources with least privilege access
+
+Resources:
+  # Jenkins master role with least privilege access
+  JenkinsMasterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: JenkinsMasterRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+  # Jenkins master instance profile
+  JenkinsMasterInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: JenkinsMasterRole
+      Path: "/"
+      Roles:
+        - !Ref JenkinsMasterRole
+
+  # AWS user-derived policies for EchoMateLite (EML) resources
+  EMLCloudFormationPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EMLCloudFormationPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - cloudformation:CreateStack
+              - cloudformation:UpdateStack
+              - cloudformation:DeleteStack
+              - cloudformation:ValidateTemplate
+              - cloudformation:DescribeStacks
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DescribeStackResource
+              - cloudformation:ListStacks
+              - cloudformation:GetTemplateSummary
+              - cloudformation:GetTemplate
+              - cloudformation:SetStackPolicy
+            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/eml-*/*"
+      Roles:
+        - !Ref JenkinsMasterRole
+  EMLS3ArtifactPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EMLS3ArtifactPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:ListBucket
+            Resource: !Sub "arn:aws:s3:::eml-artifacts/*"
+      Roles:
+        - !Ref JenkinsMasterRole
+  EMLRepository:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EMLRepository
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - ecr:GetAuthorizationToken
+              - ecr:BatchCheckLayerAvailability
+              - ecr:GetDownloadUrlForLayer
+              - ecr:GetRepositoryPolicy
+              - ecr:DescribeRepositories
+              - ecr:ListImages
+              - ecr:DescribeImages
+              - ecr:BatchGetImage
+              - ecr:InitiateLayerUpload
+              - ecr:UploadLayerPart
+              - ecr:CompleteLayerUpload
+              - ecr:PutImage
+            Resource: !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/eml-*"
+      Roles:
+        - !Ref JenkinsMasterRole
