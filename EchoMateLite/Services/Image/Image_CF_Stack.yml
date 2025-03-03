@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  This template will create a aws lambda function that store images in the S3 bucket and maintain record on DynamoDB.
+Parameters:
+  ImageBucketName:
+    Type: String
+    Description: The name of the S3 bucket where the images will be stored.
+    Default: eml-image-bucket
+  ImageTableName:
+    Type: String
+    Description: The name of the DynamoDB table where the image records will be stored.
+    Default: eml-image
+  ImageFunctionName:
+    Type: String
+    Description: The name of the Lambda function that will store the images in the S3 bucket and maintain record on DynamoDB.
+    Default: eml-image-function
+  ImageFunctionMemorySize:
+    Type: Number
+    Description: The amount of memory that the Lambda function will be allocated.
+    Default: 128
+    MinValue: 128
+    MaxValue: 3008
+  ImageFunctionTimeout:
+    Type: Number
+    Description: The amount of time that the Lambda function will be allowed to run before it times out.
+    Default: 3
+    MinValue: 1
+    MaxValue: 900
+  ImageFunctionZipFile:
+    Type: String
+    Description: The path to the zip file containing the Lambda function code.
+  ImageFunctionEnvironment:
+    Type: String
+    Description: The environment variables that will be passed to the Lambda function.  
+Resources:
+  # IAM role for the Lambda function
+  EmlImageServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: EmlImageServiceRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - s3:fullAccess
+                Resource: !Sub arn:aws:s3:::${ImageBucketName}/*
+              - Effect: Allow
+                Action:
+                  - dynamodb:fullAccess
+                Resource: !Sub arn:aws:dynamodb:*:*:table/${ImageTableName}
+      RoleName: !Sub ${ImageFunctionName}-role
+  # Lambda function that stores images in the S3 bucket and maintains record on DynamoDB    
+  EmlImageService:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref ImageFunctionName
+      Handler: index.handler
+      Role: !GetAtt EmlImageServiceRole.Arn
+      Code:
+        S3Bucket: !Sub ${AWS::AccountId}-lambda-functions
+        S3Key: !Ref ImageFunctionZipFile
+      Runtime: nodejs12.x
+      MemorySize: !Ref ImageFunctionMemorySize
+      Timeout: !Ref ImageFunctionTimeout
+      Environment:
+        Variables: !Ref ImageFunctionEnvironment
+
+  # API Gateway
+  ImageApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: image-api
+      Description: API for image processing service
+
+  # API Gateway Resource
+  ImageApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ImageApi
+      ParentId: !GetAtt ImageApi.RootResourceId
+      PathPart: images
+
+  # API Gateway Method
+  ImageApiMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ImageApi
+      ResourceId: !Ref ImageApiResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EmlImageService.Arn}/invocations
+
+  # API Gateway Deployment
+  ImageApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: ImageApiMethod
+    Properties:
+      RestApiId: !Ref ImageApi
+      StageName: prod
+
+  # Lambda Permission
+  ImageLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref EmlImageService
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ImageApi}/*/*/*
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${ImageApi}.execute-api.${AWS::Region}.amazonaws.com/prod/images        
+Transform:
+  
+Outputs:
