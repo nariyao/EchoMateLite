@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  This template create RESTFull API, S3 bucket, and DynamoDB table.
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Input project name.
+  Stage:
+    Type: String
+    Description: Input stage name.
+    AllowedValues:
+      - dev
+      - prod
+  S3BucketName:
+    Type: String
+    Description: Input S3 bucket name.
+  DynamoDBTableNameForUserDetails:
+    Type: String
+    Description: Input DynamoDB table name.
+  DynamoDBTableNameForImageDetails:
+    Type: String
+    Description: Input DynamoDB table name.
+Resources:
+  EmlS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3BucketName
+
+  EmlDynamoDBTableForUserDetails:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDBTableNameForUserDetails
+      AttributeDefinitions:
+        - AttributeName: UserId
+          AttributeType: S
+        - AttributeName: FirstName
+          AttributeType: S
+        - AttributeName: MiddleName
+          AttributeType: S
+        - AttributeName: LastName
+          AttributeType: S
+        - AttributeName: EmailId
+          AttributeType: S
+        - AttributeName: PhoneNumber
+          AttributeType: S
+        - AttributeName: Address
+          AttributeType: M
+        - AttributeName: DateOfBirth
+          AttributeType: S
+        - AttributeName: Gender
+          AttributeType: S
+        - AttributeNmae: DateOfJoining
+          AttributeType: S
+        - AttributeName: IsDeleted
+          AttributeType: BOOL
+          Default: false
+      KeySchema:
+        - AttributeName: UserId
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  EmlDynamoDBTableForImageDetails:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDBTableNameForImageDetails
+      AttributeDefinitions:
+        - AttributeName: UserId
+          AttributeType: S
+        - AttributeName: ImageId
+          AttributeType: S
+        - AttributeName: Date
+          AttributeType: S
+        - AttributeName: IsDeleted
+          AttributeType: BOOL
+          Default: false
+      KeySchema:
+        - AttributeName: UserId
+          KeyType: HASH
+        - AttributeName: ImageId
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  EmlRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Join ["", [!Ref ProjectName, "-", !Ref Stage]]
+Outputs:
+  EmlS3BucketArn:
+    Description: S3 bucket name.
+    Value: !GetAtt EmlS3Bucket.Arn
+  EmlDynamoDBTableForUserDetailsOutput:
+    Description: DynamoDB table name for user details.
+    Value: !Ref EmlDynamoDBTableForUserDetails
+  EmlDynamoDBTableForImageDetailsOutput:
+    Description: DynamoDB table name for image details.
+    Value: !Ref EmlDynamoDBTableForImageDetails
+  EmlRestApiOutput:
+    Description: RESTFull API name.
+    Value: !Ref EmlRestApi

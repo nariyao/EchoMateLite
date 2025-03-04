@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  This template create IAM Roles for the Lambda functions to access the RESTFull API, S3 bucket, and DynamoDB table.
+Resources:
+  # Policy to access S3 bucket
+  EmlS3Policy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EmlS3Policy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "s3:GetObject"
+              - "s3:PutObject"
+              - "s3:ListBucket"
+              - "s3:DeleteObject"
+            Resource: !ImportValue EmlS3BucketArn
+      Roles:
+        - !Ref EmlImageServiceRoles
+        - !Ref EmlUserServiceRoles
+
+  # Policy to access UserDetails DynamoDB table
+  EmlDynamoDBPolicyForUserDetails:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EmlDynamoDBPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "dynamodb:PutItem"
+              - "dynamodb:GetItem"
+              - "dynamodb:UpdateItem"
+              - "dynamodb:DeleteItem"
+              - "dynamodb:Scan"
+              - "dynamodb:Query"
+            Resource: !ImportValue EmlDynamoDBTableArnForUserDetails
+      Roles:
+        - !Ref EmlUserServiceRoles
+
+  # Policy to access Image record in DynamoDB table
+  EmlDynamoDBPolicyForImageDetails:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EmlDynamoDBPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "dynamodb:PutItem"
+              - "dynamodb:GetItem"
+              - "dynamodb:UpdateItem"
+              - "dynamodb:DeleteItem"
+              - "dynamodb:Scan"
+              - "dynamodb:Query"
+            Resource: !ImportValue EmlDynamoDBTableArnForImageDetails
+      Roles:
+        - !Ref EmlImageServiceRoles
+
+  EmlImageServiceRoles:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+
+  EmlUserServiceRoles:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+Outputs:
+  UserServiceRoles:
+    Description: "User Service Roles"
+    Value: !GetAtt EmlUserServiceRoles.Arn
+    Export:
+      Name: UserServiceRoles
+  ImageServiceRoles:
+    Description: "Image Service Roles"
+    Value: !GetAtt EmlImageServiceRoles.Arn
+    Export:
+      Name: ImageServiceRoles
