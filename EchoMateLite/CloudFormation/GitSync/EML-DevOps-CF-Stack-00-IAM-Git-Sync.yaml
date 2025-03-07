@@ -1,10 +1,6 @@
-template-file-path: ../DevOps/EML-DevOps-CF-Stack-00-IAM.yaml
-tag:
-  - key: "Name"
-    value: "EML-DevOps-CF-Stack-00-IAM"
-  - key: "Environment"
-    value: "Dev"
-  - key: "Project"
-    value: "EchoMateLite"
-  - key: "Owner"
-    value: "DevOps"
+template-file-path: EchoMateLite/CloudFormation/DevOps/EML-DevOps-CF-Stack-00-IAM.yaml
+parameters: {}
+tags:
+  Name: EML-DevOps-CF-Stack-00-IAM
+  Enviroment: Dev
+  Project: EchoMateLite
