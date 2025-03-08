@@ -1,6 +1,3 @@
 template-file-path: EchoMateLite/CloudFormation/DevOps/EML-DevOps-CF-Stack-00-IAM.yaml
 parameters: {}
-tags:
-  Name: EML-DevOps-CF-Stack-00-IAM
-  Enviroment: Dev
-  Project: EchoMateLite
+tags: {}
