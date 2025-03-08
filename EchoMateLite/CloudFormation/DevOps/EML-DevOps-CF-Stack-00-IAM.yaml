@@ -95,7 +95,7 @@ Resources:
       Roles:
         - !Ref EMLJenkinsMasterRole
 
-Output:
+Outputs:
   EMLJenkinsMasterInstanceProfile:
     Description: Instance profile for the EML Jenkins master
     Value: !Ref EMLJenkinsMasterInstanceProfile
