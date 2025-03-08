@@ -6,7 +6,7 @@ Resources:
   EMLJenkinsMasterRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: JenkinsMasterRole
+      RoleName: EMLJenkinsMasterRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
