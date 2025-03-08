@@ -3,7 +3,7 @@ Description: Creates IAM roles and policies for EchoMateLite (EML) resources wit
 
 Resources:
   # Jenkins master role with least privilege access
-  JenkinsMasterRole:
+  EMLJenkinsMasterRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: JenkinsMasterRole
@@ -18,13 +18,13 @@ Resources:
               - sts:AssumeRole
       Path: "/"
   # Jenkins master instance profile
-  JenkinsMasterInstanceProfile:
+  EMLJenkinsMasterInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
-      InstanceProfileName: JenkinsMasterRole
+      InstanceProfileName: EMLJenkinsMasterRole
       Path: "/"
       Roles:
-        - !Ref JenkinsMasterRole
+        - !Ref EMLJenkinsMasterRole
 
   # AWS user-derived policies for EchoMateLite (EML) resources
   EMLCloudFormationPolicy:
@@ -47,9 +47,12 @@ Resources:
               - cloudformation:GetTemplateSummary
               - cloudformation:GetTemplate
               - cloudformation:SetStackPolicy
-            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/eml-*/*"
+            Resource:
+              - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/eml-*/*"
+              - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/EML-*/*"
+
       Roles:
-        - !Ref JenkinsMasterRole
+        - !Ref EMLJenkinsMasterRole
   EMLS3ArtifactPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -64,7 +67,7 @@ Resources:
               - s3:ListBucket
             Resource: !Sub "arn:aws:s3:::eml-artifacts/*"
       Roles:
-        - !Ref JenkinsMasterRole
+        - !Ref EMLJenkinsMasterRole
   EMLRepository:
     Type: AWS::IAM::Policy
     Properties:
@@ -86,6 +89,13 @@ Resources:
               - ecr:UploadLayerPart
               - ecr:CompleteLayerUpload
               - ecr:PutImage
-            Resource: !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/eml-*"
+            Resource:
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/eml-*"
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/EML-*"
       Roles:
-        - !Ref JenkinsMasterRole
+        - !Ref EMLJenkinsMasterRole
+
+Output:
+  EMLJenkinsMasterInstanceProfile:
+    Description: Instance profile for the EML Jenkins master
+    Value: !Ref EMLJenkinsMasterInstanceProfile

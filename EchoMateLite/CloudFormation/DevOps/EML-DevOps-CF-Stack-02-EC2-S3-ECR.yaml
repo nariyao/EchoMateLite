@@ -45,9 +45,9 @@ Parameters:
       - t2.small
       - t2.medium
     Description: The instance type for Jenkins master instance.
-  KeyName:
+  SSHKeyName:
     Type: AWS::EC2::KeyPair::KeyName
-    Default: eml-devops-key
+    Default: EML-JenkinsMaster-key
     Description: The EC2 key pair for Jenkins master instance.
   ImageId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
@@ -61,8 +61,8 @@ Resources:
     Properties:
       ImageId: !Ref ImageId
       InstanceType: !Ref InstanceType
-      KeyName: !Ref KeyName
-      IamInstanceProfile: !Sub ${ProjectPrefix}-jenkins-instance-profile-${Environment}
+      KeyName: !Ref SSHKeyName
+      IamInstanceProfile: !ImportValue EMLJenkinsMasterInstanceProfile
       UserData: !Base64
         Fn::Sub: |
           #!/bin/bash -xe

@@ -46,6 +46,7 @@ Resources:
           Value: !Ref Environment
         - Key: Owner
           Value: ${ProjectName}
+
   # DevOps public subnet 1
   emlDevopsPublicSubnet1:
     Type: AWS::EC2::Subnet
@@ -61,6 +62,7 @@ Resources:
           Value: !Ref Environment
         - Key: Owner
           Value: ${ProjectName}
+
   # Devops Public subnets 2
   emlDevopsPublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -88,12 +90,14 @@ Resources:
           Value: !Ref Environment
         - Key: Owner
           Value: ${ProjectName}
+
   # Attach Internet Gateway to VPC
   emlDevopsVpcAttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref emlDevopsVpc
       InternetGatewayId: !Ref emlDevopsInternetGateway
+
   # EML devops Route Table
   emlDevopsPublicRouteTable:
     Type: AWS::EC2::RouteTable
@@ -106,6 +110,7 @@ Resources:
           Value: !Ref Environment
         - Key: Owner
           Value: !Ref ProjectName
+
   # EML devops Route Table Internet Gateway
   emlDevopsPublicRouteTableInternetGateway:
     Type: AWS::EC2::Route
@@ -114,18 +119,21 @@ Resources:
       RouteTableId: !Ref emlDevopsPublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref emlDevopsInternetGateway
+
   # EML devops Subnet Route Table Association
   emlDevopsPublicSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref emlDevopsPublicSubnet1
       RouteTableId: !Ref emlDevopsPublicRouteTable
+
   # EML devops Subnet Route Table Association
   emlDevopsPublicSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref emlDevopsPublicSubnet2
       RouteTableId: !Ref emlDevopsPublicRouteTable
+
   # EML devops Security Group for Jenkins server
   emlDevopsSecurityGroup:
     Type: AWS::EC2::SecurityGroup
