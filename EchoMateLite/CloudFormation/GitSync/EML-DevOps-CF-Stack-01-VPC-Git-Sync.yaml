@@ -1,0 +1,6 @@
+template-file-path: EchoMateLite/CloudFormation/DevOps/EML-DevOps-CF-Stack-01-VPC.yaml
+tag:
+  - Name: "EML-DevOps-CF-Stack-01-VPC"
+  - Environment: "Dev"
+  - Project: "EchoMateLite"
+  - Owner: "DevOps"
