@@ -40,11 +40,11 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: ${ProjectName}-devops-vpc
+          Value: !Sub "${ProjectName}-devops-vpc"
         - Key: Environment
           Value: !Ref Environment
         - Key: Owner
-          Value: ${ProjectName}
+          Value: !Sub "${ProjectName}"
 
   # DevOps public subnet 1
   emlDevopsPublicSubnet1:
@@ -56,11 +56,11 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: ${ProjectName}-devops-subnet1
+          Value: !Sub "${ProjectName}-devops-subnet1"
         - Key: Environment
           Value: !Ref Environment
         - Key: Owner
-          Value: ${ProjectName}
+          Value: !Sub "${ProjectName}"
 
   # Devops Public subnets 2
   emlDevopsPublicSubnet2:
@@ -72,11 +72,11 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: ${ProjectName}-devops-subnet2
+          Value: !Sub "${ProjectName}-devops-subnet2"
         - Key: Environment
           Value: !Ref Environment
         - Key: Owner
-          Value: ${ProjectName}
+          Value: !Sub "${ProjectName}"
 
   # EML devops Internet Gateway and Route Table
   emlDevopsInternetGateway:
@@ -84,11 +84,11 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: ${ProjectName}-devops-igw
+          Value: !Sub "${ProjectName}-devops-igw"
         - Key: Environment
           Value: !Ref Environment
         - Key: Owner
-          Value: ${ProjectName}
+          Value: !Sub "${ProjectName}"
 
   # Attach Internet Gateway to VPC
   emlDevopsVpcAttachGateway:
@@ -104,11 +104,11 @@ Resources:
       VpcId: !Ref emlDevopsVpc
       Tags:
         - Key: Name
-          Value: ${ProjectName}-devops-rt
+          Value: !Sub "${ProjectName}-devops-rt"
         - Key: Environment
           Value: !Ref Environment
         - Key: Owner
-          Value: !Ref ProjectName
+          Value: !Sub "${ProjectName}"
 
   # EML devops Route Table Internet Gateway
   emlDevopsPublicRouteTableInternetGateway:
@@ -152,7 +152,7 @@ Resources:
           Description: Allow Jenkins web access
       Tags:
         - Key: Name
-          Value: ${ProjectName}-devops-sg
+          Value: !Sub "${ProjectName}-devops-sg"
         - Key: Environment
           Value: !Ref Environment
         - Key: Owner
