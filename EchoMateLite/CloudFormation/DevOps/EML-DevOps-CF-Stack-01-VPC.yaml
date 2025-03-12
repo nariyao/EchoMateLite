@@ -26,10 +26,10 @@ Mappings:
   SubnetConfig:
     SubnetA:
       CIDR: 10.0.1.0/24
-      AZ: us-east-2a
+      AZ: us-east-1a
     SubnetB:
       CIDR: 10.0.2.0/24
-      AZ: us-east-2b
+      AZ: us-east-1b
 Resources:
   # DevOps VPC
   emlDevopsVpc:
