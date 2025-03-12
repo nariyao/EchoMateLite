@@ -124,7 +124,7 @@ Resources:
       AvailabilityZone: !GetAtt emlJenkinsEC2.AvailabilityZone
       Size: 10
       VolumeType: gp3
-      Encrypted: true
+      Encrypted: false
       Tags:
         - Key: Name
           Value: !Sub "${ProjectPrefix}-jenkins-ebs-${Environment}"
