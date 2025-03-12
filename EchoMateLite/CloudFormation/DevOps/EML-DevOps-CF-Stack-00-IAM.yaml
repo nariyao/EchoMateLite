@@ -99,3 +99,5 @@ Outputs:
   EMLJenkinsMasterInstanceProfile:
     Description: Instance profile for the EML Jenkins master
     Value: !Ref EMLJenkinsMasterInstanceProfile
+    Export:
+      Name: EMLJenkinsMasterInstanceProfile
