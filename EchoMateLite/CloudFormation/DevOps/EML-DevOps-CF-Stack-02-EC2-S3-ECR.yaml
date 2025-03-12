@@ -12,6 +12,7 @@ Metadata:
           - ImageId
           - Environment
           - ProjectPrefix
+          - EBSVolumeId
     ParameterLabels:
       InstanceType:
         default: Jenkins Instance Type
@@ -23,6 +24,8 @@ Metadata:
         default: Environment
       ProjectPrefix:
         default: Project Prefix
+      EBSVolumeId:
+        default: EBS Volume ID
 
 Parameters:
   Environment:
@@ -53,10 +56,17 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
     Description: The AMI ID for Jenkins master instance.
+  EBSVolumeId:
+    Type: String
+    Default: ""
+    Description: Volume ID for Jenkins master instance
   GitUri:
     Type: String
     Default: https://github.com/nariyao/EchoMateLite.git
     Description: Git repository URI for Jenkins to poll
+
+Conditions:
+  EBSVolumeIdCondition: !Not [!Equals "", !Ref EBSVolumeId]
 
 Resources:
   # Jenkins master EC2 instance
@@ -86,8 +96,6 @@ Resources:
             VolumeType: gp3
             DeleteOnTermination: true
             Encrypted: true
-            Iops: 3000
-            Throughput: 125
 
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
@@ -110,13 +118,14 @@ Resources:
   # Jenkins master backup EBS volume
   emlJenkinsEbsVolume:
     Type: AWS::EC2::Volume
+    condition: EBSVolumeIdCondition
     Properties:
-      AvailabilityZone: !Select [0, !GetAZs ""]
+      AvailabilityZone: 
       Size: 10
       VolumeType: gp3
       Encrypted: true
-      Iops: 3000
-      Throughput: 125
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
       Tags:
         - Key: Name
           Value: !Sub ${ProjectPrefix}-jenkins-ebs-${Environment}
@@ -133,7 +142,7 @@ Resources:
     Properties:
       Device: /dev/xvdf
       InstanceId: !Ref emlJenkinsEC2
-      VolumeId: !Ref emlJenkinsEbsVolume
+      VolumeId: !if [EBSVolumeIdCondition, !Ref EBSVolumeId, !Ref emlJenkinsEbsVolume]
 
   # # Jenkins master Elastic IP
   # emlJenkinsEIP:
