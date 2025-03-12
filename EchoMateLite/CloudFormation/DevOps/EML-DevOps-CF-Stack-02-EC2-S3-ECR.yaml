@@ -53,6 +53,10 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
     Description: The AMI ID for Jenkins master instance.
+  GitUri:
+    Type: String
+    Default: https://github.com/nariyao/EchoMateLite.git
+    Description: Git repository URI for Jenkins to poll
 
 Resources:
   # Jenkins master EC2 instance
@@ -67,36 +71,18 @@ Resources:
         Fn::Sub: |
           #!/bin/bash -xe
           # Update system and install dependencies
-          yum update -y
-          amazon-linux-extras install -y java-openjdk17
-          yum install -y git docker aws-cli
-          # Install Jenkins
-          wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
-          rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
-          yum install -y jenkins
-          systemctl enable jenkins
-          systemctl start jenkins
-          # Configure Docker
-          systemctl enable docker
-          systemctl start docker
-          usermod -aG docker ec2-user
-          usermod -aG docker jenkins
-          # Install Node.js using nvm
-          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-          . ~/.nvm/nvm.sh
-          nvm install 22
-          nvm alias default 22
-          # Configure Jenkins to use Node.js
-          echo 'export PATH=$PATH:~/.nvm/versions/node/v22/bin' >> /etc/sysconfig/jenkins
-          systemctl restart jenkins
-          # Install AWS CloudWatch Agent
-          yum install -y amazon-cloudwatch-agent
-          /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/AmazonCloudWatch/JenkinsConfig
-
+          sudo yum update -y
+          # Clone devops branch from EchoMateLite git repository
+          git clone --branch https://github.com/nariyao/EchoMateLite.git 
+          cd EchoMateLite
+          git checkout devops
+          cd EchoMateLite/CloudFormation/DevOps
+          sudo chmod +x emlJenkinsEC2-Entrypoint.sh
+          sudo ./emlJenkinsEC2-Entrypoint.sh
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
-            VolumeSize: 30
+            VolumeSize: 20
             VolumeType: gp3
             DeleteOnTermination: true
             Encrypted: true
@@ -126,7 +112,7 @@ Resources:
     Type: AWS::EC2::Volume
     Properties:
       AvailabilityZone: !Select [0, !GetAZs ""]
-      Size: 30
+      Size: 10
       VolumeType: gp3
       Encrypted: true
       Iops: 3000
@@ -149,28 +135,29 @@ Resources:
       InstanceId: !Ref emlJenkinsEC2
       VolumeId: !Ref emlJenkinsEbsVolume
 
-  # Jenkins master Elastic IP
-  emlJenkinsEIP:
-    Type: AWS::EC2::EIP
-    Properties:
-      Domain: vpc
-      Tags:
-        - Key: Name
-          Value: !Sub ${ProjectPrefix}-jenkins-eip-${Environment}
-        - Key: Environment
-          Value: !Ref Environment
+  # # Jenkins master Elastic IP
+  # emlJenkinsEIP:
+  #   Type: AWS::EC2::EIP
+  #   Properties:
+  #     Domain: vpc
+  #     Tags:
+  #       - Key: Name
+  #         Value: !Sub ${ProjectPrefix}-jenkins-eip-${Environment}
+  #       - Key: Environment
+  #         Value: !Ref Environment
 
-  emlJenkinsEIPAssociation:
-    Type: AWS::EC2::EIPAssociation
-    Properties:
-      EIP: !Ref emlJenkinsEIP
-      InstanceId: !Ref emlJenkinsEC2
+  # emlJenkinsEIPAssociation:
+  #   Type: AWS::EC2::EIPAssociation
+  #   Properties:
+  #     EIP: !Ref emlJenkinsEIP
+  #     InstanceId: !Ref emlJenkinsEC2
 
+  # Arifact Bucket
   emlDevopsArtifactsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Sub ${ProjectPrefix}-artifacts-${AWS::AccountId}-${AWS::Region}-${Environment}
+      BucketName: eml-artifacts-bucket
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -190,6 +177,7 @@ Resources:
             NoncurrentVersionExpiration:
               NoncurrentDays: 30
 
+  # EML ECR Repository
   EchoMateLiteRepository:
     Type: AWS::ECR::Repository
     Properties:
@@ -221,19 +209,17 @@ Resources:
 Outputs:
   JenkinsURL:
     Description: Jenkins URL
-    Value: !Sub http://${emlJenkinsEIP}:8080
-    Export:
-      Name: !Sub ${ProjectPrefix}-jenkins-url-${Environment}
+    Value: !Sub "http://${emlJenkinsEIP}:8080"
   JenkinsInitialPassword:
     Description: Command to get Jenkins initial admin password
-    Value: !Sub sudo cat /var/lib/jenkins/secrets/initialAdminPassword on ${emlJenkinsEC2}
+    Value: !Sub "sudo cat /var/lib/jenkins/secrets/initialAdminPassword on ${emlJenkinsEC2}"
   ArtifactsBucketName:
     Description: S3 bucket for build artifacts
     Value: !Ref emlDevopsArtifactsBucket
     Export:
-      Name: !Sub ${ProjectPrefix}-artifacts-bucket-${Environment}
+      Name: emlArtifactsBucket
   EcrRepositoryURI:
     Description: ECR Repository URI
-    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EchoMateLiteRepository}
+    Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EchoMateLiteRepository}"
     Export:
-      Name: !Sub ${ProjectPrefix}-ecr-repo-uri-${Environment}
+      Name: emlRopositoryURI
