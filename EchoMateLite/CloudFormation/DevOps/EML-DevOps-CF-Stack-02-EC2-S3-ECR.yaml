@@ -67,6 +67,7 @@ Parameters:
 
 Conditions:
   EBSVolumeIdCondition: !Not [!Equals [!Ref EBSVolumeId, ""]]
+
 Resources:
   # Jenkins master EC2 instance
   emlJenkinsEC2:
@@ -107,7 +108,7 @@ Resources:
 
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectPrefix}-jenkins-ec2-${Environment}
+          Value: !Sub "${ProjectPrefix}-jenkins-ec2-${Environment}"
         - Key: Environment
           Value: !Ref Environment
         - Key: Owner
@@ -165,7 +166,7 @@ Resources:
   #     EIP: !Ref emlJenkinsEIP
   #     InstanceId: !Ref emlJenkinsEC2
 
-  # Arifact Bucket
+  # Artifact Bucket
   emlDevopsArtifactsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -235,4 +236,4 @@ Outputs:
     Description: ECR Repository URI
     Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EchoMateLiteRepository}"
     Export:
-      Name: emlRopositoryURI
+      Name: emlRepositoryURI
