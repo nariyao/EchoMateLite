@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  This template creates an EBS volume that can be attached to an EC2 instance, S3 artifact bucket and ECR repository for docker image.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Environment name for resource tagging
+  ProjectPrefix:
+    Type: String
+    Default: eml
+    Description: Project prefix for resource naming
+Resources:
+  # Jenkins master backup EBS volume
+  emlJenkinsEbsVolume:
+    Type: AWS::EC2::Volume
+    Properties:
+      AvailabilityZone: !GetAtt emlJenkinsEC2.AvailabilityZone
+      Size: 10
+      VolumeType: gp3
+      Encrypted: false
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectPrefix}-jenkins-ebs-${Environment}"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: EML
+        - Key: Backup
+          Value: true
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+
+  # Artifact Bucket
+  emlDevopsArtifactsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: eml-artifacts-bucket
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: AutoDeleteOldArtifacts
+            Status: Enabled
+            ExpirationInDays: 90
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+
+  # EML ECR Repository
+  EchoMateLiteRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: EchoMateLiteRepository
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      EncryptionConfiguration:
+        EncryptionType: AES256
+      ImageTagMutability: IMMUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep last 30 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 30
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
+Outputs:
+  JenkinsEbsVolumeId:
+    Description: The ID of the EBS volume for Jenkins
+    Value: !Ref emlJenkinsEbsVolume
+    Export:
+      Name: emlJenkinsEbsVolumeId
+  ArtifactsBucketName:
+    Description: S3 bucket for build artifacts
+    Value: !Ref emlDevopsArtifactsBucket
+    Export:
+      Name: emlArtifactsBucket
+  EcrRepositoryURI:
+    Description: ECR Repository URI
+    Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EchoMateLiteRepository}"
+    Export:
+      Name: emlRepositoryURI
