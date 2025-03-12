@@ -66,8 +66,7 @@ Parameters:
     Description: Git repository URI for Jenkins to poll
 
 Conditions:
-  EBSVolumeIdCondition: !Not [!Equals "", !Ref EBSVolumeId]
-
+  EBSVolumeIdCondition: !Not [!Equals [!Ref EBSVolumeId, ""]]
 Resources:
   # Jenkins master EC2 instance
   emlJenkinsEC2:
@@ -77,18 +76,19 @@ Resources:
       InstanceType: !Ref InstanceType
       KeyName: !Ref SSHKeyName
       IamInstanceProfile: !ImportValue EMLJenkinsMasterInstanceProfile
-      UserData: !Base64
-        Fn::Sub: |
-          #!/bin/bash -xe
-          # Update system and install dependencies
-          sudo yum update -y
-          # Clone devops branch from EchoMateLite git repository
-          git clone --branch https://github.com/nariyao/EchoMateLite.git 
-          cd EchoMateLite
-          git checkout devops
-          cd EchoMateLite/CloudFormation/DevOps
-          sudo chmod +x emlJenkinsEC2-Entrypoint.sh
-          sudo ./emlJenkinsEC2-Entrypoint.sh
+      UserData:
+        Fn::Base64:
+          Fn::Sub: |
+            #!/bin/bash -xe
+            # Update system and install dependencies
+            sudo yum update -y
+            # Clone devops branch from EchoMateLite git repository
+            git clone --branch devops --single-branch https://github.com/nariyao/EchoMateLite.git 
+            cd EchoMateLite
+            git checkout devops
+            cd EchoMateLite/CloudFormation/DevOps
+            sudo chmod +x emlJenkinsEC2-Entrypoint.sh
+            sudo ./emlJenkinsEC2-Entrypoint.sh
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:
@@ -118,23 +118,23 @@ Resources:
   # Jenkins master backup EBS volume
   emlJenkinsEbsVolume:
     Type: AWS::EC2::Volume
-    condition: EBSVolumeIdCondition
+    Condition: EBSVolumeIdCondition
     Properties:
-      AvailabilityZone: 
+      AvailabilityZone: !GetAtt emlJenkinsEC2.AvailabilityZone
       Size: 10
       VolumeType: gp3
       Encrypted: true
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectPrefix}-jenkins-ebs-${Environment}
+          Value: !Sub "${ProjectPrefix}-jenkins-ebs-${Environment}"
         - Key: Environment
           Value: !Ref Environment
         - Key: Owner
           Value: EML
         - Key: Backup
           Value: true
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
 
   # Attach backup EBS volume to Jenkins master instance
   emlJenkinsEbsVolumeAttachment:
@@ -142,7 +142,11 @@ Resources:
     Properties:
       Device: /dev/xvdf
       InstanceId: !Ref emlJenkinsEC2
-      VolumeId: !if [EBSVolumeIdCondition, !Ref EBSVolumeId, !Ref emlJenkinsEbsVolume]
+      VolumeId:
+        Fn::If:
+          - EBSVolumeIdCondition
+          - !Ref EBSVolumeId
+          - !Ref emlJenkinsEbsVolume
 
   # # Jenkins master Elastic IP
   # emlJenkinsEIP:
