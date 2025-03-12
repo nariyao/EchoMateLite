@@ -66,7 +66,7 @@ Parameters:
     Description: Git repository URI for Jenkins to poll
 
 Conditions:
-  EBSVolumeIdCondition: !Not [!Equals [!Ref EBSVolumeId, ""]]
+  CreateNewVolumeCondition: !Equals [!Ref EBSVolumeId, ""]
 
 Resources:
   # Jenkins master EC2 instance
@@ -119,7 +119,7 @@ Resources:
   # Jenkins master backup EBS volume
   emlJenkinsEbsVolume:
     Type: AWS::EC2::Volume
-    Condition: EBSVolumeIdCondition
+    Condition: CreateNewVolumeCondition
     Properties:
       AvailabilityZone: !GetAtt emlJenkinsEC2.AvailabilityZone
       Size: 10
@@ -145,9 +145,9 @@ Resources:
       InstanceId: !Ref emlJenkinsEC2
       VolumeId:
         Fn::If:
-          - EBSVolumeIdCondition
-          - !Ref EBSVolumeId
+          - CreateNewVolumeCondition
           - !Ref emlJenkinsEbsVolume
+          - !Ref EBSVolumeId
 
   # # Jenkins master Elastic IP
   # emlJenkinsEIP:
