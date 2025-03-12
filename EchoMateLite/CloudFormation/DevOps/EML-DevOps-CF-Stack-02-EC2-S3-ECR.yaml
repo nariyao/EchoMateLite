@@ -119,7 +119,7 @@ Resources:
   # Jenkins master backup EBS volume
   emlJenkinsEbsVolume:
     Type: AWS::EC2::Volume
-    Condition: EBSVolumeIdCondition
+    Condition: !Not EBSVolumeIdCondition
     Properties:
       AvailabilityZone: !GetAtt emlJenkinsEC2.AvailabilityZone
       Size: 10
