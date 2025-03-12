@@ -209,7 +209,7 @@ Resources:
 Outputs:
   JenkinsURL:
     Description: Jenkins URL
-    Value: !Sub "http://${emlJenkinsEIP}:8080"
+    Value: !GetAtt emlJenkinsEC2.PublicIp
   JenkinsInitialPassword:
     Description: Command to get Jenkins initial admin password
     Value: !Sub "sudo cat /var/lib/jenkins/secrets/initialAdminPassword on ${emlJenkinsEC2}"
