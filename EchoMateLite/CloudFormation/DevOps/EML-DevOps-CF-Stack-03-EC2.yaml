@@ -24,8 +24,6 @@ Metadata:
         default: Environment
       ProjectPrefix:
         default: Project Prefix
-      EBSVolumeId:
-        default: EBS Volume ID
 
 Parameters:
   Environment:
@@ -56,17 +54,10 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
     Description: The AMI ID for Jenkins master instance.
-  EBSVolumeId:
-    Type: String
-    Default: ""
-    Description: Volume ID for Jenkins master instance
   GitUri:
     Type: String
     Default: https://github.com/nariyao/EchoMateLite.git
     Description: Git repository URI for Jenkins to poll
-
-Conditions:
-  CreateNewVolumeCondition: !Equals [!Ref EBSVolumeId, ""]
 
 Resources:
   # Jenkins master EC2 instance
@@ -116,38 +107,13 @@ Resources:
         - Key: Backup
           Value: true
 
-  # Jenkins master backup EBS volume
-  emlJenkinsEbsVolume:
-    Type: AWS::EC2::Volume
-    Condition: CreateNewVolumeCondition
-    Properties:
-      AvailabilityZone: !GetAtt emlJenkinsEC2.AvailabilityZone
-      Size: 10
-      VolumeType: gp3
-      Encrypted: false
-      Tags:
-        - Key: Name
-          Value: !Sub "${ProjectPrefix}-jenkins-ebs-${Environment}"
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: Owner
-          Value: EML
-        - Key: Backup
-          Value: true
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-
   # Attach backup EBS volume to Jenkins master instance
   emlJenkinsEbsVolumeAttachment:
     Type: AWS::EC2::VolumeAttachment
     Properties:
       Device: /dev/xvdf
       InstanceId: !Ref emlJenkinsEC2
-      VolumeId:
-        Fn::If:
-          - CreateNewVolumeCondition
-          - !Ref emlJenkinsEbsVolume
-          - !Ref EBSVolumeId
+      VolumeId: !ImportValue emlJenkinsEbsVolumeId
 
   # # Jenkins master Elastic IP
   # emlJenkinsEIP:
@@ -166,74 +132,7 @@ Resources:
   #     EIP: !Ref emlJenkinsEIP
   #     InstanceId: !Ref emlJenkinsEC2
 
-  # Artifact Bucket
-  emlDevopsArtifactsBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    Properties:
-      BucketName: eml-artifacts-bucket
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      VersioningConfiguration:
-        Status: Enabled
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      LifecycleConfiguration:
-        Rules:
-          - Id: AutoDeleteOldArtifacts
-            Status: Enabled
-            ExpirationInDays: 90
-            NoncurrentVersionExpiration:
-              NoncurrentDays: 30
-
-  # EML ECR Repository
-  EchoMateLiteRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: !Sub ${ProjectPrefix}-echomate-lite-${Environment}
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      EncryptionConfiguration:
-        EncryptionType: AES256
-      ImageTagMutability: IMMUTABLE
-      LifecyclePolicy:
-        LifecyclePolicyText: |
-          {
-            "rules": [
-              {
-                "rulePriority": 1,
-                "description": "Keep last 30 images",
-                "selection": {
-                  "tagStatus": "any",
-                  "countType": "imageCountMoreThan",
-                  "countNumber": 30
-                },
-                "action": {
-                  "type": "expire"
-                }
-              }
-            ]
-          }
-
 Outputs:
   JenkinsURL:
     Description: Jenkins URL
     Value: !GetAtt emlJenkinsEC2.PublicIp
-  JenkinsInitialPassword:
-    Description: Command to get Jenkins initial admin password
-    Value: !Sub "sudo cat /var/lib/jenkins/secrets/initialAdminPassword on ${emlJenkinsEC2}"
-  ArtifactsBucketName:
-    Description: S3 bucket for build artifacts
-    Value: !Ref emlDevopsArtifactsBucket
-    Export:
-      Name: emlArtifactsBucket
-  EcrRepositoryURI:
-    Description: ECR Repository URI
-    Value: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EchoMateLiteRepository}"
-    Export:
-      Name: emlRepositoryURI

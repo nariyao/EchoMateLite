@@ -1,0 +1,6 @@
+template-file-path: EchoMateLite/CloudFormation/DevOps/EML-DevOps-CF-Stack-02-EBS-S3-ECR.yaml
+tag:
+  - Name: "EML-DevOps-CF-Stack-02-EBS-S3-ECR"
+  - Environment: "Dev"
+  - Project: "EchoMateLite"
+  - Owner: "DevOps"
