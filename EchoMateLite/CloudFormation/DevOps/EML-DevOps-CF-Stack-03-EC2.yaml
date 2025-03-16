@@ -52,7 +52,7 @@ Parameters:
     Description: The EC2 key pair for Jenkins master instance.
   ImageId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
-    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+    Default: ami-08b5b3a93ed654d19
     Description: The AMI ID for Jenkins master instance.
   GitUri:
     Type: String

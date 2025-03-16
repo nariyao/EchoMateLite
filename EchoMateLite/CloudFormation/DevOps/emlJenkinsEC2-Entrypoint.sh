@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+# Disable crond service if running
+if systemctl is-active --quiet crond; then
+    log_message "Disabling crond service"
+    sudo systemctl stop crond
+fi
+
 # Update system and install dependencies
 sudo yum update -y
 # Create log files
@@ -34,7 +40,7 @@ find /var/lib/jenkins -type d -exec chmod 755 {} +
 find /var/lib/jenkins -type f -exec chmod 644 {} +
 
 # Start services
-for service in jenkins cron docker; do
+for service in jenkins crond docker; do
     check_and_start_service "$service" &
 done
 
@@ -54,36 +60,8 @@ echo "Logging all versions" >> /var/log/emlJenkinsEC2-Entrypoint.log
 wait
 echo "All versions have been logged" >> /var/log/emlJenkinsEC2-Entrypoint.log
 echo "Entrypoint script completed" >> /var/log/emlJenkinsEC2-Entrypoint.log
+
+# Reboot the system
+sudo reboot
+
 exit 0
-
-
-
-
-
-# amazon-linux-extras install -y java-openjdk17
-# yum install -y git docker aws-cli
-# # Install Jenkins
-# wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
-# rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
-# yum install -y jenkins
-# systemctl enable jenkins
-# systemctl start jenkins
-# # Configure Docker
-# systemctl enable docker
-# systemctl start docker
-# usermod -aG docker ec2-user
-# usermod -aG docker jenkins
-# # Install Node.js using nvm
-# sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
-# sudo source ~/.bashrc
-# nvm --version
-# nvm install 22
-# nvm alias default 22
-# node --version
-
-# # Configure Jenkins to use Node.js
-# echo 'export PATH=$PATH:~/.nvm/versions/node/v22/bin' >> /etc/sysconfig/jenkins
-# systemctl restart jenkins
-# # Install AWS CloudWatch Agent
-# yum install -y amazon-cloudwatch-agent
-# /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/AmazonCloudWatch/JenkinsConfig
