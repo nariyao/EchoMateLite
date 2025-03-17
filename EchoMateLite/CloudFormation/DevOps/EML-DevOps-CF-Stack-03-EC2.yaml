@@ -81,6 +81,13 @@ Resources:
             cd EchoMateLite/CloudFormation/DevOps
             sudo chmod +x emlJenkinsEC2-Entrypoint.sh
             sudo ./emlJenkinsEC2-Entrypoint.sh
+            # check emlJenkinsEC2-Backup.sh file exists
+            if [ -f /home/ec2-user/emlJenkinsEC2-Backup.sh ]; then
+              sudo chmod +x emlJenkinsEC2-Backup.sh
+            else
+              sudo cp emlJenkinsEC2-Backup.sh /home/ec2-user/emlJenkinsEC2-Backup.sh
+              sudo chmod +x /home/ec2-user/emlJenkinsEC2-Backup.sh
+            fi
       BlockDeviceMappings:
         - DeviceName: /dev/xvda
           Ebs:

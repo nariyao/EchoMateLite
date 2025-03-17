@@ -3,7 +3,7 @@ set -e
 
 # Disable crond service if running
 if systemctl is-active --quiet crond; then
-    log_message "Disabling crond service"
+    echo "Disabling crond service" >> /var/log/emlJenkinsEC2-Entrypoint.log
     sudo systemctl stop crond
 fi
 
@@ -39,6 +39,28 @@ sudo chmod 755 /var/lib/jenkins
 find /var/lib/jenkins -type d -exec chmod 755 {} +
 find /var/lib/jenkins -type f -exec chmod 644 {} +
 
+# Check if cron job exists or not
+cron_job="*/15 * * * * root /bin/bash /home/ec2-user/emlJenkinsEC2-Backup.sh"
+cron_file="/etc/cron.d/jenkins_backup"
+
+if [ ! -f "$cron_file" ]; then
+    echo "Creating cron job for Jenkins backup" >> /var/log/emlJenkinsEC2-Entrypoint.log
+    echo "$cron_job" | sudo tee "$cron_file"
+    echo "" | sudo tee -a "$cron_file"
+    sudo chmod 644 "$cron_file"
+    echo "Cron job created" >> /var/log/emlJenkinsEC2-Entrypoint.log
+else
+    if ! sudo grep -q "$cron_job" "$cron_file"; then
+        echo "Updating cron job for Jenkins backup" >> /var/log/emlJenkinsEC2-Entrypoint.log
+        echo "$cron_job" | sudo tee "$cron_file"
+        echo "" | sudo tee -a "$cron_file"
+        sudo chmod 644 "$cron_file"
+        echo "Cron job updated" >> /var/log/emlJenkinsEC2-Entrypoint.log
+    else
+        echo "Cron job already exists" >> /var/log/emlJenkinsEC2-Entrypoint.log
+    fi
+fi
+
 # Start services
 for service in jenkins crond docker; do
     check_and_start_service "$service" &
@@ -55,7 +77,7 @@ echo "Logging all versions" >> /var/log/emlJenkinsEC2-Entrypoint.log
     docker --version
     java --version
     git --version
-) > /var/log/emlJenkinsEC2-Entrypoint.log 2>> /var/log/emlJenkinsEC2-Entrypoint-Error.log &
+) >> /var/log/emlJenkinsEC2-Entrypoint.log 2>> /var/log/emlJenkinsEC2-Entrypoint-Error.log &
 
 wait
 echo "All versions have been logged" >> /var/log/emlJenkinsEC2-Entrypoint.log
