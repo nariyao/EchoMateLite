@@ -12,7 +12,6 @@ Metadata:
           - ImageId
           - Environment
           - ProjectPrefix
-          - EBSVolumeId
     ParameterLabels:
       InstanceType:
         default: Jenkins Instance Type
@@ -51,7 +50,7 @@ Parameters:
     Default: EML-JenkinsMaster-key
     Description: The EC2 key pair for Jenkins master instance.
   ImageId:
-    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Type: AWS::EC2::Image::Id
     Default: ami-00a929b66ed6e0de6
     Description: The AMI ID for Jenkins master instance.
   GitUri:
