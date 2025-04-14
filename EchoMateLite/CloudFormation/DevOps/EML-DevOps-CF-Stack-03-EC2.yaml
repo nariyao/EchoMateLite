@@ -52,7 +52,7 @@ Parameters:
     Description: The EC2 key pair for Jenkins master instance.
   ImageId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
-    Default: ami-08b5b3a93ed654d19
+    Default: ami-00a929b66ed6e0de6
     Description: The AMI ID for Jenkins master instance.
   GitUri:
     Type: String
@@ -122,22 +122,22 @@ Resources:
       InstanceId: !Ref emlJenkinsEC2
       VolumeId: !ImportValue emlJenkinsEbsVolumeId
 
-  # # Jenkins master Elastic IP
-  # emlJenkinsEIP:
-  #   Type: AWS::EC2::EIP
-  #   Properties:
-  #     Domain: vpc
-  #     Tags:
-  #       - Key: Name
-  #         Value: !Sub ${ProjectPrefix}-jenkins-eip-${Environment}
-  #       - Key: Environment
-  #         Value: !Ref Environment
+  # Jenkins master Elastic IP
+  emlJenkinsEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectPrefix}-jenkins-eip-${Environment}
+        - Key: Environment
+          Value: !Ref Environment
 
-  # emlJenkinsEIPAssociation:
-  #   Type: AWS::EC2::EIPAssociation
-  #   Properties:
-  #     EIP: !Ref emlJenkinsEIP
-  #     InstanceId: !Ref emlJenkinsEC2
+  emlJenkinsEIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      EIP: !Ref emlJenkinsEIP
+      InstanceId: !Ref emlJenkinsEC2
 
 Outputs:
   JenkinsURL:
