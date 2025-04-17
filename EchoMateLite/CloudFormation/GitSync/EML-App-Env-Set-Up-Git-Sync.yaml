@@ -1,4 +1,4 @@
-template-file-path: EchoMateLite/CloudFormation/DevOps/EML-App-Env-Set-Up.yaml
+template-file-path: EchoMateLite/CloudFormation/EML-Dev-Env/EML-App-Env-Set-Up.yaml
 tag:
   - Name: "EML-App-Env-Set-Up"
   - Environment: "Dev"
