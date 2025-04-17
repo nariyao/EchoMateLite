@@ -40,4 +40,4 @@ Resources:
     Type: "AWS::WAFv2::WebACLAssociation"
     Properties:
       ResourceArn: !ImportValue ${ProjectPrefix}-LoadBalancerArn-${Enviroment}
-      WebACLArn: !GetAtt WebACL.Arn
+      WebACLArn: !GetAtt EmlWebACL.Arn # Associate the Web ACL with the load balancer
