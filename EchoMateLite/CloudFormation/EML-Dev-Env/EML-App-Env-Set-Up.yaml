@@ -210,34 +210,34 @@ Outputs:
     Description: VPC ID
     Value: !Ref EmlVPC
     Export:
-      Name: !Sub ${ProjectPrefix}-EmlVPCId-${Enviroment}
+      Name: !Sub ${ProjectPrefix}-VPCId-${Enviroment}
 
   EmlPublicSubnet1:
     Description: Public Subnet 1 ID
     Value: !Ref EmlPublicSubnet1
     Export:
-      Name: !Sub ${ProjectPrefix}-EmlPublicSubnet1-${Enviroment}
+      Name: !Sub ${ProjectPrefix}-PublicSubnet1-${Enviroment}
 
   EmlPublicSubnet2:
     Description: Public Subnet 2 ID
     Value: !Ref EmlPublicSubnet2
     Export:
-      Name: !Sub ${ProjectPrefix}-EmlPublicSubnet2-${Enviroment}
+      Name: !Sub ${ProjectPrefix}-PublicSubnet2-${Enviroment}
 
   EmlPrivateSubnet1:
     Description: Private Subnet 1 ID
     Value: !Ref EmlPrivateSubnet1
     Export:
-      Name: !Sub ${ProjectPrefix}-EmlPrivateSubnet1-${Enviroment}
+      Name: !Sub ${ProjectPrefix}-PrivateSubnet1-${Enviroment}
 
   EmlPrivateSubnet2:
     Description: Private Subnet 2 ID
     Value: !Ref EmlPrivateSubnet2
     Export:
-      Name: !Sub ${ProjectPrefix}-EmlPrivateSubnet2-${Enviroment}
+      Name: !Sub ${ProjectPrefix}-PrivateSubnet2-${Enviroment}
 
   EmlLoadBalancerDNS:
     Description: DNS name of the load balancer
     Value: !GetAtt EmlApplicationLoadBalancer.DNSName
     Export:
-      Name: !Sub ${ProjectPrefix}-EmlLoadBalancerDNS-${Enviroment}
+      Name: !Sub ${ProjectPrefix}-LoadBalancerDNS-${Enviroment}
