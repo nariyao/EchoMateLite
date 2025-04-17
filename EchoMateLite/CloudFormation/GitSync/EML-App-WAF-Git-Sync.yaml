@@ -1,0 +1,6 @@
+template-file-path: EchoMateLite/CloudFormation/EML-Dev-Env/EML-WAF.yml
+tag:
+  - Name: "EML-WAF"
+  - Environment: "Dev"
+  - Project: "EchoMateLite"
+  - Owner: "EML"

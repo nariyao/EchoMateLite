@@ -241,3 +241,9 @@ Outputs:
     Value: !GetAtt EmlApplicationLoadBalancer.DNSName
     Export:
       Name: !Sub ${ProjectPrefix}-LoadBalancerDNS-${Enviroment}
+
+  EmlLoadBalancerArn:
+    Description: ARN of the load balancer
+    Value: !Ref EmlApplicationLoadBalancer
+    Export:
+      Name: !Sub ${ProjectPrefix}-LoadBalancerArn-${Enviroment}

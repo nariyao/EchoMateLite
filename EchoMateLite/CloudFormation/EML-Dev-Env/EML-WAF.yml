@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template to create AWS WAF
+
+Parameters:
+  Enviroment:
+    Type: String
+    Default: Dev
+  ProjectPrefix:
+    Type: String
+    Default: eml
+
+Resources:
+  EmlWebACL:
+    Type: "AWS::WAFv2::WebACL"
+    Properties:
+      Name: "EmlWebACL"
+      Scope: "REGIONAL" # Options: REGIONAL (for ALB, API Gateway), CLOUDFRONT
+      DefaultAction:
+        Allow: {} # Default action to allow requests
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: "EmlWebACL"
+      Description: "Web ACL for EML application"
+      Rules:
+        - Name: "RateLimitRule"
+          Priority: 1
+          Action:
+            Block: {} # Block requests exceeding the rate limit
+          Statement:
+            RateBasedStatement:
+              Limit: 2000 # Set a rate limit of 2000 requests per 5 minutes
+              AggregateKeyType: "IP"
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: "RateLimitRule"
+
+  WebACLAssociation:
+    Type: "AWS::WAFv2::WebACLAssociation"
+    Properties:
+      ResourceArn: !ImportValue ${ProjectPrefix}-LoadBalancerArn-${Enviroment}
+      WebACLArn: !GetAtt WebACL.Arn
