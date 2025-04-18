@@ -76,7 +76,7 @@ def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parame
         }
         
         // Wait for stack operation to complete
-        return waitForStackOperation(stackName)
+        return waitForStackOperation(newStackName)
     }
 }
 
@@ -142,7 +142,7 @@ pipeline{
                 }
                 stage('Deploying Services CFN'){
                     steps{
-                        deployCFNStack('./EchoMateLite/Services', 'Services-CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')
+                        deployCFNStack('./EchoMateLite/Services', 'Services-CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.json')
                     }
                 }
             }
