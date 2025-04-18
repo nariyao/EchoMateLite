@@ -7,21 +7,11 @@ node {
         ]
 
         // Select the Jenkinsfile based on the branch name
-        //echo "Selected nested Jenkinsfile: ${jenkinsfiles[branchName]}"
+        echo "Selected nested Jenkinsfile: ${jenkinsfiles[branchName]}"
 
-        // Load and execute the selected Jenkinsfile
-        //load jenkinsfiles[branchName]
+        // clone the repository containing the nested Jenkinsfile
         git branch: branchName, url: 'https://github.com/nariyao/EchoMateLite.git'
-        sh """
-            tree
-            ls -l
-           """
-        sh """
-           cd ..
-           tree
-           ls -l
-        """
-        load "EchoMateLite/Services/Jenkinsfile-services" //temporary solution to load the services Jenkinsfile
-        
+        // Load and execute the selected Jenkinsfile
+        load jenkinsfiles[branchName]
     }
 }

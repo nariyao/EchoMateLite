@@ -7,13 +7,8 @@ pipeline{
         stage('Checkout'){
             steps{
                 echo 'Start: Checkout the repository...'
-                sh "pwd"
-                sh "ls -l"
-                sh "tree"
-                // sh """
-                //     git status
-                // """
                 sh "cd EchoMateLite/Services/"
+                sh "tree"
             }
         }
         stage('Validating CloudFormation Template'){
@@ -23,6 +18,7 @@ pipeline{
                         echo 'Start: Validating the CloudFormation template...'
                         sh """
                             echo 'Validating Services_Roles_CFN'
+                            tree
                             aws cloudformation validate-template --template-body file://Services_Roles_CFN.yml
                         """
                     }
