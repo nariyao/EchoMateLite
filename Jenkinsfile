@@ -10,6 +10,8 @@ node {
         echo "Selected nested Jenkinsfile: ${jenkinsfiles[branchName]}"
 
         // Load and execute the selected Jenkinsfile
+        //load jenkinsfiles[branchName]
         load jenkinsfiles[branchName]
+        
     }
 }
