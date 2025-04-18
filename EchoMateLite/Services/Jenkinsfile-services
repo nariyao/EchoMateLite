@@ -8,8 +8,10 @@ pipeline{
             steps{
                 echo 'Start: Checkout the repository...'
                 sh "pwd"
+                sh "ls -l"
+                sh "tree"
                 sh """
-                    git checkout Services
+                    git status
                 """
                 sh "cd EchoMateLite/Services/"
             }
