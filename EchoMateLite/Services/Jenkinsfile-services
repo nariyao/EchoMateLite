@@ -108,17 +108,23 @@ pipeline{
             parallel {
                 stage('Validating Services Roles CFN'){
                     steps{
-                        isCFNTemplateValid('./EchoMateLite/Services', 'Services_Roles_CFN.yml')
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                            isCFNTemplateValid('./EchoMateLite/Services', 'Services_Roles_CFN.yml')
+                        }
                     }
                 }
                 stage('Validating DynamoDB CFN'){
                     steps{
-                        isCFNTemplateValid('./EchoMateLite/Services', 'DynamoDB_CFN.yml')
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                            isCFNTemplateValid('./EchoMateLite/Services', 'DynamoDB_CFN.yml')
+                        }
                     }
                 }
                 stage('Validating Services CFN'){
                     steps{
-                        isCFNTemplateValid('./EchoMateLite/Services', 'Services_CFN.yml')
+                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                            isCFNTemplateValid('./EchoMateLite/Services', 'Services_CFN.yml')
+                        }
                     }
                 }
             }
