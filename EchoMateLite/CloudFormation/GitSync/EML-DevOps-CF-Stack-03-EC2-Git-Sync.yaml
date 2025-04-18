@@ -1,4 +1,6 @@
 template-file-path: EchoMateLite/CloudFormation/DevOps/EML-DevOps-CF-Stack-03-EC2.yaml
+parameters:
+  InstanceType: "t2.medium"
 tag:
   - Name: "EML-DevOps-CF-Stack-03"
   - Environment: "Dev"
