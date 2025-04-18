@@ -7,7 +7,7 @@ pipeline{
         stage('Checkout'){
             steps{
                 echo 'Start: Checkout the repository...'
-                sh "cd EchoMateLite/Services/"
+                sh "cd ./EchoMateLite/Services/"
                 sh "tree"
             }
         }
