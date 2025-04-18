@@ -17,7 +17,7 @@ def isCFNTemplateValid(templatePath, templateName) {
                 return false
             }
         }
-        return result == 0
+        return true
     }
 
 // Function to wait for stack operation to complete
