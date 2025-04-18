@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "ProjectPrefix",
+    "ParameterValue": "eml"
+  },
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "EmailMateLite"
+  }
+]
