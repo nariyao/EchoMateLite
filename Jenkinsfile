@@ -15,6 +15,11 @@ node {
             tree
             ls -l
            """
+        sh """
+           ch ..
+           tree
+           ls -l
+        """
         load "EchoMateLite/Services/Jenkinsfile-services" //temporary solution to load the services Jenkinsfile
         
     }
