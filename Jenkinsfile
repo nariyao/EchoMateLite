@@ -16,7 +16,7 @@ node {
             ls -l
            """
         sh """
-           ch ..
+           cd ..
            tree
            ls -l
         """
