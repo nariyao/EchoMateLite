@@ -1,17 +1,17 @@
 pipeline{
     agent any
-    environment{
-        
+    environment {
+        AWS_DEFAULT_REGION = 'us-east-1'
     }
     stages{
         stage('Checkout'){
             steps{
                 echo 'Start: Checkout the repository...'
-                pwd
+                sh "pwd"
                 sh """
                     git checkout Services
                 """
-                cd "EchoMateLite/Services/"
+                sh "cd EchoMateLite/Services/"
             }
         }
         stage('Validating CloudFormation Template'){
@@ -19,16 +19,16 @@ pipeline{
                 echo 'Start: Validating the CloudFormation template...'
                 sh """
                     echo 'Validating Services_Roles_CFN'
-                    aws cloudformation validate-template --template-body file://Network_CF.yml
+                    aws cloudformation validate-template --template-body file://Services_Roles_CFN.yml
                 """
                 sh """
                     echo 'Validating DynamoDB_CFN'
-                    aws cloudformation validate-template --template-body file://Network_CF.yml
+                    aws cloudformation validate-template --template-body file://DynamoDB_CFN.yml
                 """
 
                 sh """
                     echo 'Validating Services_CFN'
-                    aws cloudformation validate-template --template-body file://Services_Roles_CF.yml
+                    aws cloudformation validate-template --template-body file://Services_CFN.yml
                 """
             }
         }
