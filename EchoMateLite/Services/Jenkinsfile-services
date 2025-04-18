@@ -14,6 +14,7 @@ def isCFNTemplateValid(templatePath, templateName) {
             def result = sh(script: "aws cloudformation validate-template --template-body file://${templateName}", returnStatus: true)
             if (result != 0) {
                 error("CloudFormation template validation failed for ${templateName}")
+                return false
             }
         }
         return result == 0
