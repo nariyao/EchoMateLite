@@ -1,6 +1,9 @@
 // Jenkinsfile for validating CloudFormation templates in the EchoMateLite/Services directory
+// No major errors found. However, here are some potential improvements to consider:
+// 3. Consider adding wait conditions after stack creation/update
+// 4. Consider adding stack deletion cleanup in case of failures
+// check if the CloudFormation template is valid
 def isCFNTemplateValid(templatePath, templateName) {
-    dir(templatePath) {
         echo "Validating CloudFormation template: ${templateName}"
         def result = sh(script: "aws cloudformation validate-template --template-body file://${templateName}", returnStatus: true)
         if (result != 0) {
@@ -8,7 +11,70 @@ def isCFNTemplateValid(templatePath, templateName) {
         }
         return result == 0
     }
+    
+// Function to wait for stack operation to complete
+def waitForStackOperation(stackName) {
+    echo "Waiting for stack ${stackName} operation to complete..."
+    def status = ''
+    def count = 0
+    def maxAttempts = 60 // 30 minutes timeout (60 * 30 seconds)
+    
+    while (count < maxAttempts) {
+        def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
+        status = result
+        
+        if (status.endsWith('COMPLETE')) {
+            if (status == 'CREATE_COMPLETE' || status == 'UPDATE_COMPLETE') {
+                echo "Stack ${stackName} operation completed successfully"
+                return true
+            } else if (status == 'ROLLBACK_COMPLETE' || status == 'UPDATE_ROLLBACK_COMPLETE') {
+                error("Stack ${stackName} operation failed and rolled back")
+                return false
+            }
+        } else if (status.endsWith('FAILED')) {
+            error("Stack ${stackName} operation failed with status: ${status}")
+            return false
+        }
+        
+        sleep 30 // Wait 30 seconds before next check
+        count++
+    }
+    
+    error("Timeout waiting for stack ${stackName} operation to complete")
+    return false
 }
+
+// Updated deployCFNStack function with wait condition
+def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parameters.yml', iamCapabilities = '') {
+
+    // Check if the template file exists
+    if (!fileExists(parametersFile)) {
+            error("Parameters file ${parametersFile} does not exist in path ${templatePath}")
+            return false
+        }
+
+    // Check if the template file exists and validate it
+    dir(templatePath) {
+        echo "Deploying CloudFormation stack: ${stackName}"
+        def capabilities = iamCapabilities ? "--capabilities ${iamCapabilities}" : ''
+        def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName}", returnStatus: true)
+        if (result == 0) {
+            echo "Stack ${stackName} already exists. Updating the stack..."
+            result = sh(script: "aws cloudformation update-stack --stack-name ${stackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
+        } else {
+            echo "Stack ${stackName} does not exist. Creating the stack..."
+            result = sh(script: "aws cloudformation create-stack --stack-name ${stackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
+        }
+        if (result != 0) {
+            error("CloudFormation stack deployment failed for ${stackName}")
+            return false
+        }
+        
+        // Wait for stack operation to complete
+        return waitForStackOperation(stackName)
+    }
+}
+
 
 pipeline{
     agent any
@@ -32,58 +98,41 @@ pipeline{
         }
         stage('Validating CloudFormation Template'){
             parallel {
-                stage('Validating Services_Roles_CFN'){
+                stage('Validating Services Roles CFN'){
                     steps{
                         isCFNTemplateValid('./EchoMateLite/Services', 'Services_Roles_CFN.yml')
                     }
                 }
-                stage('Validating DynamoDB_CFN'){
+                stage('Validating DynamoDB CFN'){
                     steps{
                         isCFNTemplateValid('./EchoMateLite/Services', 'DynamoDB_CFN.yml')
                     }
                 }
-                stage('Validating Services_CFN'){
+                stage('Validating Services CFN'){
                     steps{
                         isCFNTemplateValid('./EchoMateLite/Services', 'Services_CFN.yml')
                     }
                 }
             }
         }
-        // stage('Deploying the CFN Stack'){
-        //     steps{
-        //         echo 'Start: Deploying the CloudFormation stack...'
-        //         def stackName = 'Services_Roles_CFN'
-        //         if (sh "aws cloudformation describe-stacks --stack-name ${stackName}" == 0){
-        //             echo 'Stack already exists. Updating the stack...'
-        //             sh """
-        //                 echo 'Updating Services_Roles_CF'
-        //                 aws cloudformation update-stack --stack-name Services_Roles_CF --template-body file://${stackName}.yml  --capabilities CAPABILITY_NAMED_IAM
-        //             """
-        //         } else {
-        //             echo 'Stack does not exist. Creating the stack...'
-        //             sh """
-        //                 echo 'Deploying Services_Roles_CF'
-        //                 aws cloudformation create-stack --stack-name Services_Roles_CF --template-body file://${stackName}.yml --parameters file://Services_Roles_CF_Parameters.json --capabilities CAPABILITY_NAMED_IAM
-        //             """
-        //         }
-        //     }
-        //     steps{
-        //         echo 'Start: Deploying the CloudFormation stack...'
-        //         def stackName = 'Services_CFN'
-        //         if (sh "aws cloudformation describe-stacks --stack-name ${stackName}" == 0){
-        //             echo 'Stack already exists. Updating the stack...'
-        //             sh """
-        //                 echo 'Updating Network_CF'
-        //                 aws cloudformation update-stack --stack-name Network_CF --template-body file://${stackName}.yml  --capabilities CAPABILITY_NAMED_IAM
-        //             """
-        //         } else {
-        //             echo 'Stack does not exist. Creating the stack...'
-        //             sh """
-        //                 echo 'Deploying Network_CF'
-        //                 aws cloudformation create-stack --stack-name Network_CF --template-body file://${stackName}.yml --parameters file://Network_CF_Parameters.json --capabilities CAPABILITY_NAMED_IAM
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Deploying the CFN Stack'){
+            parallel {
+                stage('Deploying Services Roles CFN'){
+                    steps{
+                        deployCFNStack('./EchoMateLite/Services', 'Services_Roles_CF', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CF_Parameters.yml', 'CAPABILITY_NAMED_IAM')
+                    }
+                }
+                stage('Deploying DynamoDB CFN'){
+                    steps{
+                        deployCFNStack('./EchoMateLite/Services', 'DynamoDB_CF', 'DynamoDB_CFN.yml', 'Parameters/DynamoDB_CF_Parameters.yml')
+                    }
+                }
+                stage('Deploying Services CFN'){
+                    steps{
+                        deployCFNStack('./EchoMateLite/Services', 'Services_CF', 'Services_CFN.yml', 'Parameters/Services_CF_Parameters.yml')
+                    }
+                }
+            }
+        }
     }
 }
