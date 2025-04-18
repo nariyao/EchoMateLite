@@ -1,8 +1,4 @@
-// Jenkinsfile for validating CloudFormation templates in the EchoMateLite/Services directory
-// No major errors found. However, here are some potential improvements to consider:
-// 3. Consider adding wait conditions after stack creation/update
-// 4. Consider adding stack deletion cleanup in case of failures
-// check if the CloudFormation template is valid
+// Function to validate CloudFormation template
 def isCFNTemplateValid(templatePath, templateName) {
         echo "Validating CloudFormation template: ${templateName}"
         dir(templatePath) {
@@ -88,6 +84,8 @@ pipeline{
     agent any
     environment {
         AWS_DEFAULT_REGION = 'us-east-1'
+        PROJECT_NAME = 'EchoMateLite'
+        PROJECT_PREFIX = 'Eml'
     }
     stages{
         stage('Check Directory') {
@@ -133,17 +131,17 @@ pipeline{
             parallel {
                 stage('Deploying Services Roles CFN'){
                     steps{
-                        deployCFNStack('./EchoMateLite/Services', 'Services_Roles_CF', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CFN_Parameters.yml', 'CAPABILITY_NAMED_IAM')
+                        deployCFNStack('./EchoMateLite/Services', '${env.PROJECT_PREFIX}-Services_Roles_CFN', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CFN_Parameters.yml', 'CAPABILITY_NAMED_IAM')
                     }
                 }
                 stage('Deploying DynamoDB CFN'){
                     steps{
-                        deployCFNStack('./EchoMateLite/Services', 'DynamoDB_CF', 'DynamoDB_CFN.yml', 'Parameters/DynamoDB_CFN_Parameters.yml')
+                        deployCFNStack('./EchoMateLite/Services', '${env.PROJECT_PREFIX}-DynamoDB_CFN', 'DynamoDB_CFN.yml', 'Parameters/DynamoDB_CFN_Parameters.yml')
                     }
                 }
                 stage('Deploying Services CFN'){
                     steps{
-                        deployCFNStack('./EchoMateLite/Services', 'Services_CF', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.yml')
+                        deployCFNStack('./EchoMateLite/Services', '${env.PROJECT_PREFIX}-Services_CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.yml')
                     }
                 }
             }
