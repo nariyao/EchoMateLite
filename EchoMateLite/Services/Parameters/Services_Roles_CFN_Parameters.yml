@@ -1,10 +1,4 @@
-Parameters:
-  ProjectPrefix:
-    Type: String
-    Description: The project prefix for the resources.
-    Default: eml
-
-  ProjectName:
-    Type: String
-    Description: The name of the project.
-    Default: EmailMateLite
+- ParameterKey: ProjectPrefix
+  ParameterValue: eml
+- ParameterKey: ProjectName
+  ParameterValue: EmailMateLite
