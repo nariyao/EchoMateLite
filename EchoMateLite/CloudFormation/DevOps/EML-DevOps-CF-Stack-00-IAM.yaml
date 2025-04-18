@@ -39,7 +39,6 @@ Resources:
               - cloudformation:CreateStack
               - cloudformation:UpdateStack
               - cloudformation:DeleteStack
-              - cloudformation:ValidateTemplate
               - cloudformation:DescribeStacks
               - cloudformation:DescribeStackEvents
               - cloudformation:DescribeStackResource
@@ -50,7 +49,10 @@ Resources:
             Resource:
               - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/eml-*/*"
               - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/EML-*/*"
-
+          - Effect: Allow
+            Action:
+              - cloudformation:ValidateTemplate
+            Resource: "*"
       Roles:
         - !Ref EMLJenkinsMasterRole
   EMLS3ArtifactPolicy:
