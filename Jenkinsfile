@@ -13,7 +13,7 @@ pipeline {
                     // Select the Jenkinsfile based on the branch name or default to 'Jenkinsfile-default'
                     echo "Selected nested Jenkinsfile: ${jenkinsfiles[branchName]}"                    
                     // Execute the selected Jenkinsfile
-                    load jenkinsfiles[branchName]
+                    //load jenkinsfiles[branchName]
                 }
             }
         }
