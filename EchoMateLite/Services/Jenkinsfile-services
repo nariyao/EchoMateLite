@@ -10,9 +10,9 @@ pipeline{
                 sh "pwd"
                 sh "ls -l"
                 sh "tree"
-                sh """
-                    git status
-                """
+                // sh """
+                //     git status
+                // """
                 sh "cd EchoMateLite/Services/"
             }
         }
