@@ -11,7 +11,7 @@ node {
 
         // Load and execute the selected Jenkinsfile
         //load jenkinsfiles[branchName]
-        load jenkinsfiles[services]
+        load "EchoMateLite/Services/Jenkinsfile-services" //temporary solution to load the services Jenkinsfile
         
     }
 }
