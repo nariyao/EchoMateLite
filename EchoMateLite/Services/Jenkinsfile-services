@@ -60,17 +60,18 @@ def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parame
                 return false
         }
         echo "Deploying CloudFormation stack: ${stackName}"
+        def newStackName = "${env.PROJECT_PREFIX}-${stackName}"
         def capabilities = iamCapabilities ? "--capabilities ${iamCapabilities}" : ''
-        def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName}", returnStatus: true)
+        def result = sh(script: "aws cloudformation describe-stacks --stack-name ${newStackName}", returnStatus: true)
         if (result == 0) {
-            echo "Stack ${stackName} already exists. Updating the stack..."
-            result = sh(script: "aws cloudformation update-stack --stack-name ${stackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
+            echo "Stack ${newStackName} already exists. Updating the stack..."
+            result = sh(script: "aws cloudformation update-stack --stack-name ${newStackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
         } else {
-            echo "Stack ${stackName} does not exist. Creating the stack..."
-            result = sh(script: "aws cloudformation create-stack --stack-name ${stackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
+            echo "Stack ${newStackName} does not exist. Creating the stack..."
+            result = sh(script: "aws cloudformation create-stack --stack-name ${newStackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
         }
         if (result != 0) {
-            error("CloudFormation stack deployment failed for ${stackName}")
+            error("CloudFormation stack deployment failed for ${newStackName}")
             return false
         }
         
@@ -131,17 +132,17 @@ pipeline{
             parallel {
                 stage('Deploying Services Roles CFN'){
                     steps{
-                        deployCFNStack('./EchoMateLite/Services', '${env.PROJECT_PREFIX}-Services_Roles_CFN', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')
+                        deployCFNStack('./EchoMateLite/Services', 'Services-Roles-CFN', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')
                     }
                 }
                 stage('Deploying DynamoDB CFN'){
                     steps{
-                        deployCFNStack('./EchoMateLite/Services', '${env.PROJECT_PREFIX}-DynamoDB_CFN', 'DynamoDB_CFN.yml', 'Parameters/DynamoDB_CFN_Parameters.json')
+                        deployCFNStack('./EchoMateLite/Services', 'DynamoDB-CFN', 'DynamoDB_CFN.yml', 'Parameters/DynamoDB_CFN_Parameters.json')
                     }
                 }
                 stage('Deploying Services CFN'){
                     steps{
-                        deployCFNStack('./EchoMateLite/Services', '${env.PROJECT_PREFIX}-Services_CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')
+                        deployCFNStack('./EchoMateLite/Services', 'Services-CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')
                     }
                 }
             }
