@@ -2,24 +2,21 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: |
   This template create RESTFull API, S3 bucket, and DynamoDB table.
 Parameters:
+  ProjectPrefix:
+    Type: String
+    Description: The project prefix for the resources.
+    Default: eml
+
   ProjectName:
     Type: String
-    default: eml
-    Description: Input project name.
-
-  DynamoDBTableNameForUserDetails:
-    Type: String
-    Description: Input DynamoDB table name.
-
-  DynamoDBTableNameForImageDetails:
-    Type: String
-    Description: Input DynamoDB table name.
+    Description: The name of the project.
+    Default: EmailMateLite
 
 Resources:
   DynamoDBTableForUserDetails:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Ref DynamoDBTableNameForUserDetails
+      TableName: !Sub "${ProjectPrefix}-UserDetails"
       AttributeDefinitions:
         - AttributeName: UserId
           AttributeType: S
@@ -54,7 +51,7 @@ Resources:
   EmlDynamoDBTableForPosts:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Ref DynamoDBTableNameForposts
+      TableName: !Sub "${ProjectPrefix}-Posts"
       AttributeDefinitions:
         - AttributeName: UserId
           AttributeType: S
@@ -85,7 +82,7 @@ Resources:
   EmlDynamoDBTableForImageDetails:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Ref DynamoDBTableNameForImageDetails
+      TableName: !Sub "${ProjectPrefix}-ImageDetails"
       AttributeDefinitions:
         - AttributeName: ParentId
           AttributeType: S
@@ -108,10 +105,18 @@ Resources:
 Outputs:
   EmlDynamoDBTableForUserDetailsOutput:
     Description: DynamoDB table name for user details.
-    Value: !Ref EmlDynamoDBTableForUserDetails
+    Value: !Ref DynamoDBTableForUserDetails
+    Export:
+      Name: !Sub "${ProjectPrefix}-DynamoDBTableForUserDetailsOutput"
+
+  EmlDynamoDBTableForPostsOutput:
+    Description: DynamoDB table name for posts.
+    Value: !Ref EmlDynamoDBTableForPosts
+    Export:
+      Name: !Sub "${ProjectPrefix}-DynamoDBTableForPostsOutput"
+
   EmlDynamoDBTableForImageDetailsOutput:
     Description: DynamoDB table name for image details.
     Value: !Ref EmlDynamoDBTableForImageDetails
-  EmlRestApiOutput:
-    Description: RESTFull API name.
-    Value: !Ref EmlRestApi
+    Export:
+      Name: !Sub "${ProjectPrefix}-DynamoDBTableForImageDetailsOutput"
