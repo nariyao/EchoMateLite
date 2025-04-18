@@ -2,52 +2,133 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: |
   This template create RESTFull API, S3 bucket and ElastiCache.
 Parameters:
+  ProjectPrefix:
+    Type: String
+    Description: Input project name.
+    Default: eml
   ProjectName:
     Type: String
     Description: Input project name.
-  Stage:
+    Default: EchoMateLite
+  Environment:
     Type: String
     Description: Input stage name.
+    Default: Dev
     AllowedValues:
-      - dev
-      - prod
-  S3BucketName:
-    Type: String
-    Description: Input S3 bucket name.
-  DynamoDBTableNameForUserDetails:
-    Type: String
-    Description: Input DynamoDB table name.
-  DynamoDBTableNameForImageDetails:
-    Type: String
-    Description: Input DynamoDB table name.
+      - Dev
+      - Prod
 Resources:
+  # S3 Bucket
   EmlS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref S3BucketName
+      BucketName: !Sub "${ProjectPrefix}-${Environment}-bucket"
 
+  # ElastiCache Cluster
   EmlElastiCache:
     Type: AWS::ElastiCache::CacheCluster
     Properties:
       CacheNodeType: cache.t2.micro
       Engine: redis
       NumCacheNodes: 1
-      
+      ClusterName: !Sub "${ProjectPrefix}-${Environment}-ElastiCache"
+      vpcId: !ImportValue
+        Fn::Sub: "${ProjectPrefix}-VPCId-${Environment}"
+      VpcSecurityGroupIds:
+        - !Ref EmlSecurityGroup
+      CacheSubnetGroupName: !Ref EmlCacheSubnetGroup
+      Port: 6379
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectPrefix}-${Environment}-ElastiCache"
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: ProjectPrefix
+          Value: !Ref ProjectPrefix
+      EngineVersion: 7.0
+
+  # Security Group for ElastiCache
+  EmlSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for ElastiCache
+      VpcId: !ImportValue
+        Fn::Sub: "${ProjectPrefix}-VPCId-${Environment}"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          CidrIp: 0.0.0.0/0
+
+  # ElastiCache Subnet Group
+  EmlCacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: ElastiCache Subnet Group
+      SubnetIds:
+        - !ImportValue
+          Fn::Sub: "${ProjectPrefix}-PrivateSubnet1-${Environment}"
+        - !ImportValue
+          Fn::Sub: "${ProjectPrefix}-PrivateSubnet2-${Environment}"
+      CacheSubnetGroupName: !Sub "${ProjectPrefix}-${Environment}-ElastiCache-SubnetGroup"
+
+  # Rest API
   EmlRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: !Join ["", [!Ref ProjectName, "-", !Ref Stage]]
+      Name: !Sub "${ProjectPrefix}-${Environment}-RestApi"
+      Description: !Sub "This is the REST API for ${ProjectName}"
 
 Outputs:
+  # S3 Bucket Outputs
   EmlS3BucketArn:
     Description: S3 bucket name.
     Value: !GetAtt EmlS3Bucket.Arn
-  EmlDynamoDBTableForUserDetailsOutput:
-    Description: DynamoDB table name for user details.
-    Value: !Ref EmlDynamoDBTableForUserDetails
-  EmlDynamoDBTableForImageDetailsOutput:
-    Description: DynamoDB table name for image details.
-    Value: !Ref EmlDynamoDBTableForImageDetails
-  EmlRestApiOutput:
-    Description: RESTFull API name.
+    Export:
+      Name: !Sub "${ProjectPrefix}-S3BucketArn"
+  EmlS3BucketName:
+    Description: S3 bucket name.
+    Value: !Sub "${ProjectPrefix}-${Environment}-bucket"
+    Export:
+      Name: !Sub "${ProjectPrefix}-S3BucketName"
+
+  # Rest API Outputs
+  EmlRestApiId:
+    Description: RESTFull API ID.
     Value: !Ref EmlRestApi
+    Export:
+      Name: !Sub "${ProjectPrefix}-RestApiId"
+  EmlRestApiName:
+    Description: RESTFull API name.
+    Value: !Sub "${ProjectPrefix}-${Environment}-RestApi"
+    Export:
+      Name: !Sub "${ProjectPrefix}-RestApiName"
+  EmlRestApiEndpoint:
+    Description: RESTFull API endpoint.
+    Value: !Sub "https://${EmlRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
+    Export:
+      Name: !Sub "${ProjectPrefix}-RestApiEndpoint"
+
+  # ElastiCache Outputs
+  EmlElastiCacheOutput:
+    Description: ElastiCache name.
+    Value: !Ref EmlElastiCache
+    Export:
+      Name: !Sub "${ProjectPrefix}-ElastiCache"
+  EmlElastiCacheEndpoint:
+    Description: ElastiCache endpoint.
+    Value: !GetAtt EmlElastiCache.ConfigurationEndpoint.Address
+    Export:
+      Name: !Sub "${ProjectPrefix}-ElastiCacheEndpoint"
+  EmlElastiCachePort:
+    Description: ElastiCache port.
+    Value: !GetAtt EmlElastiCache.ConfigurationEndpoint.Port
+    Export:
+      Name: !Sub "${ProjectPrefix}-ElastiCachePort"
+  EmlElastiCacheClusterId:
+    Description: ElastiCache cluster ID.
+    Value: !Ref EmlElastiCache
+    Export:
+      Name: !Sub "${ProjectPrefix}-ElastiCacheClusterId"

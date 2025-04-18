@@ -10,8 +10,6 @@ def isCFNTemplateValid(templatePath, templateName) {
     }
 }
 
-
-
 pipeline{
     agent any
     environment {
