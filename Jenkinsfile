@@ -7,7 +7,7 @@ node {
         ]
 
         // Select the Jenkinsfile based on the branch name
-        echo "Selected nested Jenkinsfile: ${jenkinsfiles[branchName]}"
+        //echo "Selected nested Jenkinsfile: ${jenkinsfiles[branchName]}"
 
         // Load and execute the selected Jenkinsfile
         //load jenkinsfiles[branchName]
