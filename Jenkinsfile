@@ -13,4 +13,5 @@ node {
         git branch: branchName, url: 'https://github.com/nariyao/EchoMateLite.git'
         // Load and execute the selected Jenkinsfile
         load jenkinsfiles['services']
+    }
 }
