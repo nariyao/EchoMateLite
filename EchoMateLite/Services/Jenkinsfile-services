@@ -5,13 +5,20 @@
 // check if the CloudFormation template is valid
 def isCFNTemplateValid(templatePath, templateName) {
         echo "Validating CloudFormation template: ${templateName}"
-        def result = sh(script: "aws cloudformation validate-template --template-body file://${templateName}", returnStatus: true)
-        if (result != 0) {
-            error("CloudFormation template validation failed for ${templateName}")
+        dir(templatePath) {
+            // Check if the template file exists
+            if (!fileExists(templateName)) {
+                error("CloudFormation template ${templateName} does not exist in path ${templatePath}")
+                return false
+            }
+            def result = sh(script: "aws cloudformation validate-template --template-body file://${templateName}", returnStatus: true)
+            if (result != 0) {
+                error("CloudFormation template validation failed for ${templateName}")
+            }
         }
         return result == 0
     }
-    
+
 // Function to wait for stack operation to complete
 def waitForStackOperation(stackName) {
     echo "Waiting for stack ${stackName} operation to complete..."
@@ -47,14 +54,14 @@ def waitForStackOperation(stackName) {
 // Updated deployCFNStack function with wait condition
 def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parameters.yml', iamCapabilities = '') {
 
-    // Check if the template file exists
-    if (!fileExists(parametersFile)) {
-            error("Parameters file ${parametersFile} does not exist in path ${templatePath}")
-            return false
-        }
 
     // Check if the template file exists and validate it
     dir(templatePath) {
+        // Check if the template file exists
+        if (!fileExists(parametersFile)) {
+                error("Parameters file ${parametersFile} does not exist in path ${templatePath}")
+                return false
+        }
         echo "Deploying CloudFormation stack: ${stackName}"
         def capabilities = iamCapabilities ? "--capabilities ${iamCapabilities}" : ''
         def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName}", returnStatus: true)
