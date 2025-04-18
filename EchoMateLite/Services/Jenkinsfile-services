@@ -15,21 +15,34 @@ pipeline{
             }
         }
         stage('Validating CloudFormation Template'){
-            steps{
-                echo 'Start: Validating the CloudFormation template...'
-                sh """
-                    echo 'Validating Services_Roles_CFN'
-                    aws cloudformation validate-template --template-body file://Services_Roles_CFN.yml
-                """
-                sh """
-                    echo 'Validating DynamoDB_CFN'
-                    aws cloudformation validate-template --template-body file://DynamoDB_CFN.yml
-                """
-
-                sh """
-                    echo 'Validating Services_CFN'
-                    aws cloudformation validate-template --template-body file://Services_CFN.yml
-                """
+            parallel {
+                stage('Validating Services_Roles_CFN'){
+                    steps{
+                        echo 'Start: Validating the CloudFormation template...'
+                        sh """
+                            echo 'Validating Services_Roles_CFN'
+                            aws cloudformation validate-template --template-body file://Services_Roles_CFN.yml
+                        """
+                    }
+                }
+                stage('Validating DynamoDB_CFN'){
+                    steps{
+                        echo 'Start: Validating the CloudFormation template...'
+                        sh """
+                            echo 'Validating DynamoDB_CFN'
+                            aws cloudformation validate-template --template-body file://DynamoDB_CFN.yml
+                        """
+                    }
+                }
+                stage('Validating Services_CFN'){
+                    steps{
+                        echo 'Start: Validating the CloudFormation template...'
+                        sh """
+                            echo 'Validating Services_CFN'
+                            aws cloudformation validate-template --template-body file://Services_CFN.yml
+                        """
+                    }
+                }
             }
         }
         // stage('Deploying the CFN Stack'){

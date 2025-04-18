@@ -1,21 +1,15 @@
-pipeline {
-    agent any
-    stages {
-        stage('Determine Nested Jenkinsfile') {
-            steps {
-                script {
-                    // Get the branch name
-                    def branchName = env.BRANCH_NAME
-                    
-                    def jenkinsfiles = [
-                        'services': 'EchoMateLite/Services/Jenkinsfile-services'
-                    ]
-                    // Select the Jenkinsfile based on the branch name or default to 'Jenkinsfile-default'
-                    echo "Selected nested Jenkinsfile: ${jenkinsfiles[branchName]}"                    
-                    // Execute the selected Jenkinsfile
-                    load jenkinsfiles[branchName]
-                }
-            }
-        }
+node {
+    stage('Determine Nested Jenkinsfile') {
+        def branchName = env.BRANCH_NAME
+
+        def jenkinsfiles = [
+            'services': 'EchoMateLite/Services/Jenkinsfile-services'
+        ]
+
+        // Select the Jenkinsfile based on the branch name
+        echo "Selected nested Jenkinsfile: ${jenkinsfiles[branchName]}"
+
+        // Load and execute the selected Jenkinsfile
+        load jenkinsfiles[branchName]
     }
 }
