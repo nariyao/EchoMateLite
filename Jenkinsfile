@@ -11,7 +11,7 @@ node {
 
         // Load and execute the selected Jenkinsfile
         //load jenkinsfiles[branchName]
-        load jenkinsfiles[branchName]
+        load jenkinsfiles[services]
         
     }
 }
