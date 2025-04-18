@@ -11,6 +11,7 @@ node {
 
         // Load and execute the selected Jenkinsfile
         //load jenkinsfiles[branchName]
+        git branch: branchName, url: 'https://github.com/nariyao/EchoMateLite.git'
         sh """
             tree
             ls -l
