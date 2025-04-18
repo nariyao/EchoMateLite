@@ -1,48 +1,52 @@
+// Jenkinsfile for validating CloudFormation templates in the EchoMateLite/Services directory
+def isCFNTemplateValid(templatePath, templateName) {
+    dir(templatePath) {
+        echo "Validating CloudFormation template: ${templateName}"
+        def result = sh(script: "aws cloudformation validate-template --template-body file://${templateName}", returnStatus: true)
+        if (result != 0) {
+            error("CloudFormation template validation failed for ${templateName}")
+        }
+        return result == 0
+    }
+}
+
+
+
 pipeline{
     agent any
     environment {
         AWS_DEFAULT_REGION = 'us-east-1'
     }
     stages{
-        stage('Checkout'){
-            steps{
-                echo 'Start: Checkout the repository...'
-                sh "pwd"
-                sh "ls -l"
-                sh "tree"
-                sh """
-                    git status
-                """
-                sh "cd EchoMateLite/Services/"
+        stage('Check Directory') {
+            steps {
+                sh '''
+                    echo "Checking if EchoMateLite/Services directory exists..."
+                    if [ -d ./EchoMateLite/Services ]; then
+                        echo "Directory exists!"
+                        ls -l ./EchoMateLite/Services
+                    else
+                        echo "Directory does not exist."
+                        exit 1
+                    fi
+                '''
             }
         }
         stage('Validating CloudFormation Template'){
             parallel {
                 stage('Validating Services_Roles_CFN'){
                     steps{
-                        echo 'Start: Validating the CloudFormation template...'
-                        sh """
-                            echo 'Validating Services_Roles_CFN'
-                            aws cloudformation validate-template --template-body file://Services_Roles_CFN.yml
-                        """
+                        isCFNTemplateValid('./EchoMateLite/Services', 'Services_Roles_CFN.yml')
                     }
                 }
                 stage('Validating DynamoDB_CFN'){
                     steps{
-                        echo 'Start: Validating the CloudFormation template...'
-                        sh """
-                            echo 'Validating DynamoDB_CFN'
-                            aws cloudformation validate-template --template-body file://DynamoDB_CFN.yml
-                        """
+                        isCFNTemplateValid('./EchoMateLite/Services', 'DynamoDB_CFN.yml')
                     }
                 }
                 stage('Validating Services_CFN'){
                     steps{
-                        echo 'Start: Validating the CloudFormation template...'
-                        sh """
-                            echo 'Validating Services_CFN'
-                            aws cloudformation validate-template --template-body file://Services_CFN.yml
-                        """
+                        isCFNTemplateValid('./EchoMateLite/Services', 'Services_CFN.yml')
                     }
                 }
             }
