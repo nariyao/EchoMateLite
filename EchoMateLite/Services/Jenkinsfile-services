@@ -26,7 +26,7 @@ def waitForStackOperation(stackName) {
     while (count < maxAttempts) {
         def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
         status = result
-        
+        echo "Current stack status: ${status}"
         if (status.endsWith('COMPLETE')) {
             if (status == 'CREATE_COMPLETE' || status == 'UPDATE_COMPLETE') {
                 echo "Stack ${stackName} operation completed successfully"
