@@ -1,16 +1,21 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  This template create RESTFull API, S3 bucket, and DynamoDB table.
+  This template creates RESTful API, S3 bucket, and DynamoDB tables.
 Parameters:
   ProjectPrefix:
     Type: String
     Description: The project prefix for the resources.
     Default: eml
+    MinLength: 1
+    MaxLength: 10
+    AllowedPattern: "[a-zA-Z0-9-]*"
 
   ProjectName:
     Type: String
     Description: The name of the project.
     Default: EmailMateLite
+    MinLength: 1
+    AllowedPattern: "[a-zA-Z0-9-]*"
 
 Resources:
   DynamoDBTableForUserDetails:
@@ -20,87 +25,55 @@ Resources:
       AttributeDefinitions:
         - AttributeName: UserId
           AttributeType: S
-        - AttributeName: FirstName
-          AttributeType: S
-        - AttributeName: MiddleName
-          AttributeType: S
-        - AttributeName: LastName
-          AttributeType: S
-        - AttributeName: EmailId
-          AttributeType: S
-        - AttributeName: PhoneNumber
-          AttributeType: S
-        - AttributeName: Address
-          AttributeType: M
-        - AttributeName: DateOfBirth
-          AttributeType: S
-        - AttributeName: Gender
-          AttributeType: S
-        - AttributeNmae: DateOfJoining
-          AttributeType: S
-        - AttributeName: IsDeleted
-          AttributeType: BOOL
-          Default: false
       KeySchema:
         - AttributeName: UserId
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+      DeletionPolicy: Retain
+      BillingMode: PAY_PER_REQUEST
 
   EmlDynamoDBTableForPosts:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "${ProjectPrefix}-Posts"
       AttributeDefinitions:
-        - AttributeName: UserId
-          AttributeType: S
         - AttributeName: PostId
           AttributeType: S
-        - AttributeName: Date
-          AttributeType: S
-        - AttributeName: Message
-          AttributeType: S
-        - AttributeName: Images
-          AttributeType: array
-        - AttributeName: Likes
-          AttributeType: N
-        - AttributeName: Comments
-          AttributeType: M
-        - AttributeName: IsDeleted
-          AttributeType: BOOL
-          Default: false
       KeySchema:
-        - AttributeName: UserId
-          KeyType: HASH
         - AttributeName: PostId
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+      DeletionPolicy: Retain
+      BillingMode: PAY_PER_REQUEST
 
   EmlDynamoDBTableForImageDetails:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "${ProjectPrefix}-ImageDetails"
       AttributeDefinitions:
-        - AttributeName: ParentId
-          AttributeType: S
         - AttributeName: ImageId
           AttributeType: S
-        - AttributeName: Date
-          AttributeType: S
-        - AttributeName: IsDeleted
-          AttributeType: BOOL
-          Default: false
       KeySchema:
-        - AttributeName: ParentId
-          KeyType: HASH
         - AttributeName: ImageId
-          KeyType: RANGE
+          KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+      DeletionPolicy: Retain
+      BillingMode: PAY_PER_REQUEST
 
 Outputs:
   EmlDynamoDBTableForUserDetailsOutput:

@@ -129,22 +129,15 @@ pipeline{
             }
         }
         stage('Deploying the CFN Stack'){
-            parallel {
-                stage('Deploying Services Roles CFN'){
-                    steps{
-                        deployCFNStack('./EchoMateLite/Services', 'Services-Roles-CFN', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')
-                    }
-                }
-                stage('Deploying DynamoDB CFN'){
-                    steps{
-                        deployCFNStack('./EchoMateLite/Services', 'DynamoDB-CFN', 'DynamoDB_CFN.yml', 'Parameters/DynamoDB_CFN_Parameters.json')
-                    }
-                }
-                stage('Deploying Services CFN'){
-                    steps{
-                        deployCFNStack('./EchoMateLite/Services', 'Services-CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.json')
-                    }
-                }
+            steps{
+                echo "Deploying DynamoDB CFN Stack..."
+                deployCFNStack('./EchoMateLite/Services', 'DynamoDB-CFN', 'DynamoDB_CFN.yml', 'Parameters/DynamoDB_CFN_Parameters.json')
+            
+                echo "Deploying Services CFN Stack..."
+                deployCFNStack('./EchoMateLite/Services', 'Services-CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.json')
+            
+                echo "Deploying Services Roles CFN Stack..."
+                deployCFNStack('./EchoMateLite/Services', 'Services-Roles-CFN', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')            
             }
         }
     }

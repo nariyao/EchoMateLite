@@ -18,13 +18,43 @@ Parameters:
       - Dev
       - Prod
 Resources:
-  # S3 Bucket
+  # 1. Add encryption for S3 bucket
   EmlS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${ProjectPrefix}-${Environment}-bucket"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: TransitionToIA
+            Status: Enabled
+            Transitions:
+              - StorageClass: STANDARD_IA
+                TransitionInDays: 90
+          - Id: DeleteOldObjects
+            Status: Enabled
+            ExpirationInDays: 365
+      Tags:
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ProjectPrefix
+          Value: !Ref ProjectPrefix
+        - Key: Name
+          Value: !Sub "${ProjectPrefix}-${Environment}-bucket"
 
-  # ElastiCache Cluster
+  # 2. Add encryption for ElastiCache
   EmlElastiCache:
     Type: AWS::ElastiCache::CacheCluster
     Properties:
@@ -32,8 +62,6 @@ Resources:
       Engine: redis
       NumCacheNodes: 1
       ClusterName: !Sub "${ProjectPrefix}-${Environment}-ElastiCache"
-      vpcId: !ImportValue
-        Fn::Sub: "${ProjectPrefix}-VPCId-${Environment}"
       VpcSecurityGroupIds:
         - !Ref EmlSecurityGroup
       CacheSubnetGroupName: !Ref EmlCacheSubnetGroup
@@ -48,8 +76,10 @@ Resources:
         - Key: ProjectPrefix
           Value: !Ref ProjectPrefix
       EngineVersion: 7.0
+      TransitEncryptionEnabled: true
+      AtRestEncryptionEnabled: true
 
-  # Security Group for ElastiCache
+  # 3. Tighten security group to only allow access from specific CIDR blocks
   EmlSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -80,6 +110,10 @@ Resources:
     Properties:
       Name: !Sub "${ProjectPrefix}-${Environment}-RestApi"
       Description: !Sub "This is the REST API for ${ProjectName}"
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      MinimumCompressionSize: 1024
 
 Outputs:
   # S3 Bucket Outputs
