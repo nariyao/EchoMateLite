@@ -15,7 +15,6 @@ def isCFNTemplateValid(templatePath, templateName) {
         }
         return true
     }
-
 // Function to wait for stack operation to complete
 def waitForStackOperation(stackName) {
     echo "Waiting for stack ${stackName} operation to complete..."
@@ -24,9 +23,18 @@ def waitForStackOperation(stackName) {
     def maxAttempts = 60 // 30 minutes timeout (60 * 30 seconds)
     
     while (count < maxAttempts) {
-        def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
-        status = result
-        echo "Current stack status: ${status}"
+        try {
+            // Check the stack status
+            def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
+            status = result
+            echo "Current stack status: ${status}"
+        } catch (Exception e) {
+            echo "Error checking stack status: ${e.message}"
+            error("Failed to check stack status for ${stackName}")
+            sleep 30 // Wait 30 seconds before next check
+            count++
+            continue
+        }
         if (status.endsWith('COMPLETE')) {
             if (status == 'CREATE_COMPLETE' || status == 'UPDATE_COMPLETE') {
                 echo "Stack ${stackName} operation completed successfully"
