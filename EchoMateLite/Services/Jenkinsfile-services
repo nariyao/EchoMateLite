@@ -48,6 +48,18 @@ def waitForStackOperation(stackName) {
     return false
 }
 
+def deleteCFNStack(stackName) {
+    echo "Deleting CloudFormation stack: ${stackName}"
+    def result = sh(script: "aws cloudformation delete-stack --stack-name ${stackName}", returnStatus: true)
+    if (result != 0) {
+        error("CloudFormation stack deletion failed for ${stackName}")
+        return false
+    }
+    
+    // Wait for stack deletion to complete
+    return waitForStackOperation(stackName)
+}
+
 // Updated deployCFNStack function with wait condition
 def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parameters.yml', iamCapabilities = '') {
 
@@ -72,6 +84,7 @@ def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parame
         }
         if (result != 0) {
             error("CloudFormation stack deployment failed for ${newStackName}")
+            deleteCFNStack(newStackName) // Attempt to delete the stack if deployment fails
             return false
         }
         
@@ -130,14 +143,66 @@ pipeline{
         }
         stage('Deploying the CFN Stack'){
             steps{
-                echo "Deploying DynamoDB CFN Stack..."
+                echo "Deploying DynamoDB"
                 deployCFNStack('./EchoMateLite/Services', 'DynamoDB-CFN', 'DynamoDB_CFN.yml', 'Parameters/DynamoDB_CFN_Parameters.json')
-            
+            }
+        }
+        stage("Deploying Services"){
+            steps{
                 echo "Deploying Services CFN Stack..."
                 deployCFNStack('./EchoMateLite/Services', 'Services-CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.json')
-            
+            }
+        }
+        stage("Deploying Services Roles"){
+            steps{
                 echo "Deploying Services Roles CFN Stack..."
-                deployCFNStack('./EchoMateLite/Services', 'Services-Roles-CFN', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')            
+                deployCFNStack('./EchoMateLite/Services', 'Services-Roles-CFN', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')
+            }
+        }
+        stage("Post deployment validation"){
+            parallel {
+                stage("Post deployment validation for Services Roles CFN"){
+                    steps{
+                        echo "Post deployment validation for Services Roles CFN..."
+                        script {
+                            def stackName = "${env.PROJECT_PREFIX}-Services-Roles-CFN"
+                            def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
+                            if (result != 'CREATE_COMPLETE' && result != 'UPDATE_COMPLETE') {
+                                error("Post deployment validation failed for stack ${stackName}. Current status: ${result}")
+                            } else {
+                                echo "Post deployment validation successful for stack ${stackName}. Current status: ${result}"
+                            }
+                        }
+                    }
+                }
+                stage("Post deployment validation for Services CFN"){
+                    steps{
+                        echo "Post deployment validation for Services CFN..."
+                        script {
+                            def stackName = "${env.PROJECT_PREFIX}-Services-CFN"
+                            def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
+                            if (result != 'CREATE_COMPLETE' && result != 'UPDATE_COMPLETE') {
+                                error("Post deployment validation failed for stack ${stackName}. Current status: ${result}")
+                            } else {
+                                echo "Post deployment validation successful for stack ${stackName}. Current status: ${result}"
+                            }
+                        }
+                    }
+                }
+                stage("Post deployment validation for DynamoDB CFN"){
+                    steps{
+                        echo "Post deployment validation for DynamoDB CFN..."
+                        script {
+                            def stackName = "${env.PROJECT_PREFIX}-DynamoDB-CFN"
+                            def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
+                            if (result != 'CREATE_COMPLETE' && result != 'UPDATE_COMPLETE') {
+                                error("Post deployment validation failed for stack ${stackName}. Current status: ${result}")
+                            } else {
+                                echo "Post deployment validation successful for stack ${stackName}. Current status: ${result}"
+                            }
+                        }
+                    }
+                }
             }
         }
     }
