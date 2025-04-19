@@ -29,13 +29,10 @@ Resources:
       KeySchema:
         - AttributeName: UserId
           KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+      BillingMode: PAY_PER_REQUEST
       Tags:
         - Key: Project
           Value: !Ref ProjectName
-      BillingMode: PAY_PER_REQUEST
 
   EmlDynamoDBTableForPosts:
     Type: AWS::DynamoDB::Table
@@ -48,13 +45,10 @@ Resources:
       KeySchema:
         - AttributeName: PostId
           KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+      BillingMode: PAY_PER_REQUEST
       Tags:
         - Key: Project
           Value: !Ref ProjectName
-      BillingMode: PAY_PER_REQUEST
 
   EmlDynamoDBTableForImageDetails:
     Type: AWS::DynamoDB::Table
@@ -67,13 +61,10 @@ Resources:
       KeySchema:
         - AttributeName: ImageId
           KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+      BillingMode: PAY_PER_REQUEST
       Tags:
         - Key: Project
           Value: !Ref ProjectName
-      BillingMode: PAY_PER_REQUEST
 
 Outputs:
   EmlDynamoDBTableForUserDetailsOutput:
