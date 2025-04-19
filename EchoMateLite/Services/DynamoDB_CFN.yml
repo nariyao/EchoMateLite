@@ -20,6 +20,7 @@ Parameters:
 Resources:
   DynamoDBTableForUserDetails:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
     Properties:
       TableName: !Sub "${ProjectPrefix}-UserDetails"
       AttributeDefinitions:
@@ -34,11 +35,11 @@ Resources:
       Tags:
         - Key: Project
           Value: !Ref ProjectName
-      DeletionPolicy: Retain
       BillingMode: PAY_PER_REQUEST
 
   EmlDynamoDBTableForPosts:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
     Properties:
       TableName: !Sub "${ProjectPrefix}-Posts"
       AttributeDefinitions:
@@ -53,11 +54,11 @@ Resources:
       Tags:
         - Key: Project
           Value: !Ref ProjectName
-      DeletionPolicy: Retain
       BillingMode: PAY_PER_REQUEST
 
   EmlDynamoDBTableForImageDetails:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
     Properties:
       TableName: !Sub "${ProjectPrefix}-ImageDetails"
       AttributeDefinitions:
@@ -72,7 +73,6 @@ Resources:
       Tags:
         - Key: Project
           Value: !Ref ProjectName
-      DeletionPolicy: Retain
       BillingMode: PAY_PER_REQUEST
 
 Outputs:
