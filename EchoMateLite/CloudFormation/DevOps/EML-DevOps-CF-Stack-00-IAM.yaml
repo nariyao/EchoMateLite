@@ -106,12 +106,11 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - dynamodb:PutItem
-              - dynamodb:GetItem
-              - dynamodb:UpdateItem
-              - dynamodb:DeleteItem
-              - dynamodb:Scan
-              - dynamodb:Query
+              - dynamodb:CreateTable
+              - dynamodb:DeleteTable
+              - dynamodb:DescribeTable
+              - dynamodb:ListTables
+              - dynamodb:UpdateTable
             Resource:
               - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/eml-*"
               - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/EML-*"
