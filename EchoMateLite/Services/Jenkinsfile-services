@@ -78,13 +78,12 @@ def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parame
         if (result == 0) {
             echo "Stack ${newStackName} already exists. Updating the stack..."
             result = sh(script: "aws cloudformation update-stack --stack-name ${newStackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
-        } else {
             echo "Stack ${newStackName} does not exist. Creating the stack..."
             result = sh(script: "aws cloudformation create-stack --stack-name ${newStackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
         }
         if (result != 0) {
-            error("CloudFormation stack deployment failed for ${newStackName}")
             deleteCFNStack(newStackName) // Attempt to delete the stack if deployment fails
+            error("CloudFormation stack deployment failed for ${newStackName}")
             return false
         }
         
