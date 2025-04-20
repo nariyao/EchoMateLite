@@ -73,46 +73,71 @@ def deleteCFNStack(stackName) {
     return waitForStackOperation(stackName, 'DEL')
 }
 
-// Updated deployCFNStack function with wait condition
+// Function to deploy CloudFormation stack
 def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parameters.yml', iamCapabilities = '') {
-
-
-    // Check if the template file exists and validate it
     dir(templatePath) {
-        // Check if the template file exists
+        // Validate input parameters
         if (!fileExists(parametersFile)) {
-                error("Parameters file ${parametersFile} does not exist in path ${templatePath}")
-                return false
+            error("Parameters file ${parametersFile} does not exist in path ${templatePath}")
+            return false
         }
-        echo "Deploying CloudFormation stack: ${stackName}"
+
         def newStackName = "${env.PROJECT_PREFIX}-${stackName}"
         def capabilities = iamCapabilities ? "--capabilities ${iamCapabilities}" : ''
-        // Check if the stack already exists
+        
+        echo "Deploying CloudFormation stack: ${newStackName}"
 
-        def result = 0
         try {
-            sh(script: "aws cloudformation describe-stacks --stack-name ${newStackName}", returnStatus: true)
-            result = 0
+            // Check if stack exists
+            def stackExists = sh(
+                script: "aws cloudformation describe-stacks --stack-name ${newStackName}",
+                returnStatus: true
+            ) == 0
+
+            if (stackExists) {
+                echo "Stack ${newStackName} exists. Attempting update..."
+                try {
+                    sh """
+                        aws cloudformation update-stack \
+                        --stack-name ${newStackName} \
+                        --template-body file://${templateName} \
+                        --parameters file://${parametersFile} \
+                        ${capabilities}
+                    """
+                } catch (Exception e) {
+                    // Check if the error is "No updates are to be performed"
+                    if (e.getMessage().contains("No updates are to be performed")) {
+                        echo "No updates needed for stack ${newStackName}"
+                        return true
+                    }
+                    throw e
+                }
+            } else {
+                echo "Creating new stack ${newStackName}..."
+                sh """
+                    aws cloudformation create-stack \
+                    --stack-name ${newStackName} \
+                    --template-body file://${templateName} \
+                    --parameters file://${parametersFile} \
+                    ${capabilities}
+                """
+            }
+
+            // Wait for stack operation to complete
+            return waitForStackOperation(newStackName)
+
         } catch (Exception e) {
-            echo "Stack ${newStackName} does not exist. Proceeding to create the stack..."
-            result = 1 // Set result to 1 to indicate stack does not exist
-        }
-        if (result == 0) {
-            echo "Stack ${newStackName} already exists. Updating the stack..."
-            result = sh(script: "aws cloudformation update-stack --stack-name ${newStackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
-            echo "Stack ${newStackName} does not exist. Creating the stack..."
-            result = sh(script: "aws cloudformation create-stack --stack-name ${newStackName} --template-body file://${templateName} --parameters file://${parametersFile} ${capabilities}", returnStatus: true)
-        }
-        if (result != 0) {
-            deleteCFNStack(newStackName) // Attempt to delete the stack if deployment fails
+            echo "Error during stack deployment: ${e.getMessage()}"
+            // Only attempt deletion if stack creation failed
+            if (!stackExists) {
+                deleteCFNStack(newStackName, 'DEL')
+            }
             error("CloudFormation stack deployment failed for ${newStackName}")
             return false
         }
-        
-        // Wait for stack operation to complete
-        return waitForStackOperation(newStackName)
     }
 }
+
 
 
 pipeline{
