@@ -107,8 +107,7 @@ def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parame
                 } catch (Exception e) {
                     // Check if the error is "No updates are to be performed"
                     echo "Error during stack update: ${e.getMessage()}"
-                    echo e.getMessage().contains("No updates are to be performed")
-                    if (e.getMessage().contains("No updates are to be performed")) {
+                    if (e.getMessage().contains("exit code 254")) {
                         echo "No updates needed for stack ${newStackName}"
                         return true
                     }
