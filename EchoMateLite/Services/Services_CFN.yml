@@ -64,7 +64,7 @@ Resources:
         Types:
           - REGIONAL
       MinimumCompressionSize: 1024
-      tags:
+      Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
         - Key: Environment
