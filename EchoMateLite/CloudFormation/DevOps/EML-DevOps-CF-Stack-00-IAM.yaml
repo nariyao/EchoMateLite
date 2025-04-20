@@ -97,6 +97,7 @@ Resources:
               - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/EML-*"
       Roles:
         - !Ref EMLJenkinsMasterRole
+
   EMLDynamoDBPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -119,6 +120,7 @@ Resources:
       Roles:
         - !Ref EMLJenkinsMasterRole
   # EMLAPIGatewayPolicy:
+  EMLAPIGatewayPolicy:
     Type: AWS::IAM::Policy
     Properties:
       PolicyName: EMLAPI-GatewayPolicy
@@ -132,12 +134,10 @@ Resources:
               - apigateway:PUT
               - apigateway:DELETE
             Resource:
-              - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/eml*"
-              - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/EML*"
-              - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/Eml*"
+              - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis*"
       Roles:
         - !Ref EMLJenkinsMasterRole
-  
+
 Outputs:
   EMLJenkinsMasterInstanceProfile:
     Description: Instance profile for the EML Jenkins master
