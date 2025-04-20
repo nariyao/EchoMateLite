@@ -27,10 +27,12 @@ Resources:
               - "s3:PutObject"
               - "s3:ListBucket"
               - "s3:DeleteObject"
-            Resource: !ImportValue EmlS3BucketArn
+            Resource: !ImportValue
+              Fn::Sub: "${ProjectPrefix}-S3BucketArn"
       Roles:
         - !Ref EmlImageServiceRoles
         - !Ref EmlUserServiceRoles
+        - !Ref EmlPostServiceRoles
 
   # Policy to access UserDetails DynamoDB table
   EmlDynamoDBPolicyForUserDetails:
@@ -48,9 +50,31 @@ Resources:
               - "dynamodb:DeleteItem"
               - "dynamodb:Scan"
               - "dynamodb:Query"
-            Resource: !ImportValue EmlDynamoDBTableArnForUserDetails
+            Resource: !ImportValue
+              Fn::Sub: "${ProjectPrefix}-DynamoDBTableArnForUserDetails"
       Roles:
         - !Ref EmlUserServiceRoles
+
+  # Policy to access Posts DynamoDB table
+  EmlDynamoDBPolicyForPosts:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EmlDynamoDBPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "dynamodb:PutItem"
+              - "dynamodb:GetItem"
+              - "dynamodb:UpdateItem"
+              - "dynamodb:DeleteItem"
+              - "dynamodb:Scan"
+              - "dynamodb:Query"
+            Resource: !ImportValue
+              Fn::Sub: "${ProjectPrefix}-DynamoDBTableArnForPosts"
+      Roles:
+        - !Ref EmlPostServiceRoles
 
   # Policy to access Image record in DynamoDB table
   EmlDynamoDBPolicyForImageDetails:
@@ -68,9 +92,55 @@ Resources:
               - "dynamodb:DeleteItem"
               - "dynamodb:Scan"
               - "dynamodb:Query"
-            Resource: !ImportValue EmlDynamoDBTableArnForImageDetails
+            Resource: !ImportValue
+              Fn::Sub: "${ProjectPrefix}-DynamoDBTableArnForImageDetails"
       Roles:
         - !Ref EmlImageServiceRoles
+
+  # Policy to access ElactiCache
+  EmlElastiCachePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EmlElastiCachePolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - "elasticache:GetItem"
+              - "elasticache:PutItem"
+              - "elasticache:UpdateItem"
+              - "elasticache:DeleteItem"
+              - "elasticache:Scan"
+              - "elasticache:Query"
+            Resource: !ImportValue
+              Fn::Sub: "${ProjectPrefix}-ElastiCacheArn"
+      Roles:
+        - !Ref EmlAuthRoles
+
+  EmlAuthRoles:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+
+  EmlAuthServiceRolesForRestApi:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
 
   EmlImageServiceRoles:
     Type: AWS::IAM::Role
@@ -95,6 +165,18 @@ Resources:
             Principal:
               Service:
                 - lambda.amazonaws.com
+
+  EmlPostServiceRoles:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
 Outputs:
   UserServiceRoles:
     Description: "User Service Roles"
@@ -106,3 +188,18 @@ Outputs:
     Value: !GetAtt EmlImageServiceRoles.Arn
     Export:
       Name: ImageServiceRoles
+  PostServiceRoles:
+    Description: "Post Service Roles"
+    Value: !GetAtt EmlPostServiceRoles.Arn
+    Export:
+      Name: PostServiceRoles
+  AuthServiceRoles:
+    Description: "Auth Service Roles"
+    Value: !GetAtt EmlAuthRoles.Arn
+    Export:
+      Name: AuthServiceRoles
+  AuthServiceRolesForRestApi:
+    Description: "Auth Service Roles for Rest API"
+    Value: !GetAtt EmlAuthServiceRolesForRestApi.Arn
+    Export:
+      Name: AuthServiceRolesForRestApi
