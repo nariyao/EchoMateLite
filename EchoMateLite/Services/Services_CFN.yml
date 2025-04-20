@@ -22,7 +22,7 @@ Resources:
   EmlS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${ProjectPrefix}-bucket"
+      BucketName: eml-bucket
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -41,9 +41,6 @@ Resources:
             Transitions:
               - StorageClass: STANDARD_IA
                 TransitionInDays: 90
-          - Id: DeleteOldObjects
-            Status: Enabled
-            ExpirationInDays: 365
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
@@ -52,7 +49,7 @@ Resources:
         - Key: ProjectPrefix
           Value: !Ref ProjectPrefix
         - Key: Name
-          Value: !Sub "${ProjectPrefix}-${Environment}-bucket"
+          Value: eml-bucket"
 
   # Rest API
   EmlRestApi:
@@ -76,13 +73,13 @@ Resources:
 Outputs:
   # S3 Bucket Outputs
   EmlS3BucketArn:
-    Description: S3 bucket name.
+    Description: S3 bucket ARN.
     Value: !GetAtt EmlS3Bucket.Arn
     Export:
       Name: !Sub "${ProjectPrefix}-S3BucketArn"
   EmlS3BucketName:
     Description: S3 bucket name.
-    Value: !Sub "${ProjectPrefix-bucket"
+    Value: eml-bucket
     Export:
       Name: !Sub "${ProjectPrefix}-S3BucketName"
 
