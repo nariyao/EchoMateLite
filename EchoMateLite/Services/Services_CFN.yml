@@ -54,56 +54,6 @@ Resources:
         - Key: Name
           Value: !Sub "${ProjectPrefix}-${Environment}-bucket"
 
-  # 2. Add encryption for ElastiCache
-  EmlElastiCache:
-    Type: AWS::ElastiCache::CacheCluster
-    Properties:
-      CacheNodeType: cache.t2.micro
-      Engine: redis
-      NumCacheNodes: 1
-      ClusterName: !Sub "${ProjectPrefix}-${Environment}-ElastiCache"
-      VpcSecurityGroupIds:
-        - !Ref EmlSecurityGroup
-      CacheSubnetGroupName: !Ref EmlCacheSubnetGroup
-      Port: 6379
-      Tags:
-        - Key: Name
-          Value: !Sub "${ProjectPrefix}-${Environment}-ElastiCache"
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: ProjectName
-          Value: !Ref ProjectName
-        - Key: ProjectPrefix
-          Value: !Ref ProjectPrefix
-      EngineVersion: 7.0
-      TransitEncryptionEnabled: true
-      AtRestEncryptionEnabled: true
-
-  # 3. Tighten security group to only allow access from specific CIDR blocks
-  EmlSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Security group for ElastiCache
-      VpcId: !ImportValue
-        Fn::Sub: "${ProjectPrefix}-VPCId-${Environment}"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 6379
-          ToPort: 6379
-          CidrIp: 0.0.0.0/0
-
-  # ElastiCache Subnet Group
-  EmlCacheSubnetGroup:
-    Type: AWS::ElastiCache::SubnetGroup
-    Properties:
-      Description: ElastiCache Subnet Group
-      SubnetIds:
-        - !ImportValue
-          Fn::Sub: "${ProjectPrefix}-PrivateSubnet1-${Environment}"
-        - !ImportValue
-          Fn::Sub: "${ProjectPrefix}-PrivateSubnet2-${Environment}"
-      CacheSubnetGroupName: !Sub "${ProjectPrefix}-${Environment}-ElastiCache-SubnetGroup"
-
   # Rest API
   EmlRestApi:
     Type: AWS::ApiGateway::RestApi
@@ -114,6 +64,15 @@ Resources:
         Types:
           - REGIONAL
       MinimumCompressionSize: 1024
+      tags:
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ProjectPrefix
+          Value: !Ref ProjectPrefix
+        - Key: Name
+          Value: !Sub "${ProjectPrefix}-${Environment}-RestApi"
 
 Outputs:
   # S3 Bucket Outputs
