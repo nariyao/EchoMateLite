@@ -16,7 +16,7 @@ def isCFNTemplateValid(templatePath, templateName) {
         return true
     }
 // Function to wait for stack operation to complete
-def waitForStackOperation(stackName) {
+def waitForStackOperation(stackName, statusType = 'CU') {
     echo "Waiting for stack ${stackName} operation to complete..."
     def status = ''
     def count = 0
@@ -29,6 +29,13 @@ def waitForStackOperation(stackName) {
             status = result
             echo "Current stack status: ${status}"
         } catch (Exception e) {
+            if (statusType == 'DEL') {
+                echo "Stack ${stackName} does not exist. It may have been deleted or never created."
+                return true
+            } else {
+                error("Failed to describe stack ${stackName}: ${e.message}")
+                return false
+            }
             sleep 30 // Wait 30 seconds before next check
             count++
             continue
@@ -63,7 +70,7 @@ def deleteCFNStack(stackName) {
     }
     
     // Wait for stack deletion to complete
-    return waitForStackOperation(stackName)
+    return waitForStackOperation(stackName, 'DEL')
 }
 
 // Updated deployCFNStack function with wait condition

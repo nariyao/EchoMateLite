@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  This template create RESTFull API, S3 bucket and ElastiCache.
+  This template create RESTFull API, and S3 bucket
 Parameters:
   ProjectPrefix:
     Type: String
@@ -144,25 +144,3 @@ Outputs:
     Value: !Sub "https://${EmlRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
     Export:
       Name: !Sub "${ProjectPrefix}-RestApiEndpoint"
-
-  # ElastiCache Outputs
-  EmlElastiCacheOutput:
-    Description: ElastiCache name.
-    Value: !Ref EmlElastiCache
-    Export:
-      Name: !Sub "${ProjectPrefix}-ElastiCache"
-  EmlElastiCacheEndpoint:
-    Description: ElastiCache endpoint.
-    Value: !GetAtt EmlElastiCache.ConfigurationEndpoint.Address
-    Export:
-      Name: !Sub "${ProjectPrefix}-ElastiCacheEndpoint"
-  EmlElastiCachePort:
-    Description: ElastiCache port.
-    Value: !GetAtt EmlElastiCache.ConfigurationEndpoint.Port
-    Export:
-      Name: !Sub "${ProjectPrefix}-ElastiCachePort"
-  EmlElastiCacheClusterId:
-    Description: ElastiCache cluster ID.
-    Value: !Ref EmlElastiCache
-    Export:
-      Name: !Sub "${ProjectPrefix}-ElastiCacheClusterId"
