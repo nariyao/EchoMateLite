@@ -67,20 +67,35 @@ Resources:
           Value: !Ref ProjectName
 
 Outputs:
-  EmlDynamoDBTableForUserDetailsOutput:
+  EmlDynamoDBTableForUserDetails:
     Description: DynamoDB table name for user details.
     Value: !Ref DynamoDBTableForUserDetails
     Export:
-      Name: !Sub "${ProjectPrefix}-DynamoDBTableForUserDetailsOutput"
+      Name: !Sub "${ProjectPrefix}-DynamoDBTableForUserDetails"
+  EmlDynamoDBTableForUserDetailsArn:
+    Description: DynamoDB table ARN for user details.
+    Value: !GetAtt DynamoDBTableForUserDetails.Arn
+    Export:
+      Name: !Sub "${ProjectPrefix}-DynamoDBTableArnForUserDetails"
 
-  EmlDynamoDBTableForPostsOutput:
+  EmlDynamoDBTableForPosts:
     Description: DynamoDB table name for posts.
     Value: !Ref EmlDynamoDBTableForPosts
     Export:
-      Name: !Sub "${ProjectPrefix}-DynamoDBTableForPostsOutput"
+      Name: !Sub "${ProjectPrefix}-DynamoDBTableForPosts"
+  EmlDynamoDBTableForPostsArn:
+    Description: DynamoDB table ARN for posts.
+    Value: !GetAtt EmlDynamoDBTableForPosts.Arn
+    Export:
+      Name: !Sub "${ProjectPrefix}-DynamoDBTableArnForPosts"
 
-  EmlDynamoDBTableForImageDetailsOutput:
+  EmlDynamoDBTableForImageDetails:
     Description: DynamoDB table name for image details.
     Value: !Ref EmlDynamoDBTableForImageDetails
     Export:
-      Name: !Sub "${ProjectPrefix}-DynamoDBTableForImageDetailsOutput"
+      Name: !Sub "${ProjectPrefix}-DynamoDBTableForImageDetails"
+  EmlDynamoDBTableForImageDetailsArn:
+    Description: DynamoDB table ARN for image details.
+    Value: !GetAtt EmlDynamoDBTableForImageDetails.Arn
+    Export:
+      Name: !Sub "${ProjectPrefix}-DynamoDBTableArnForImageDetails"
