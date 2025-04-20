@@ -86,10 +86,10 @@ def deployCFNStack(templatePath, stackName, templateName, parametersFile='Parame
         def capabilities = iamCapabilities ? "--capabilities ${iamCapabilities}" : ''
         
         echo "Deploying CloudFormation stack: ${newStackName}"
-
+        def stackExists = false
         try {
             // Check if stack exists
-            def stackExists = sh(
+            stackExists = sh(
                 script: "aws cloudformation describe-stacks --stack-name ${newStackName}",
                 returnStatus: true
             ) == 0
