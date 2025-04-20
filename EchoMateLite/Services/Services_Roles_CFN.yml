@@ -113,8 +113,7 @@ Resources:
               - "elasticache:DeleteItem"
               - "elasticache:Scan"
               - "elasticache:Query"
-            Resource: !ImportValue
-              Fn::Sub: "${ProjectPrefix}-ElastiCacheArn"
+            Resource: "*"
       Roles:
         - !Ref EmlAuthRoles
 
