@@ -60,7 +60,6 @@ Resources:
     Properties:
       Name: !Sub "${ProjectPrefix}-RestApi"
       Description: !Sub "This is the REST API for ${ProjectName}"
-      IPAddressType: IPV4
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -72,7 +71,7 @@ Resources:
         - Key: ProjectPrefix
           Value: !Ref ProjectPrefix
         - Key: Name
-          Value: !Sub "${ProjectPrefix}-${Environment}-RestApi"
+          Value: !Sub "${ProjectPrefix}-RestApi"
 
 Outputs:
   # S3 Bucket Outputs
