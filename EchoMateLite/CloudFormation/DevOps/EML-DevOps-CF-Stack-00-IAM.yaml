@@ -137,6 +137,60 @@ Resources:
               - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis*"
       Roles:
         - !Ref EMLJenkinsMasterRole
+  
+  # Security group 
+  EMLSecurityGroup:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EMLSecurityGroup
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - ec2:CreateSecurityGroup
+              - ec2:DescribeSecurityGroups
+              - ec2:DescribeSecurityGroupRules
+              - ec2:DescribeSecurityGroups
+              - ec2:AuthorizeSecurityGroupIngress
+              - ec2:AuthorizeSecurityGroupEgress
+              - ec2:RevokeSecurityGroupIngress
+              - ec2:DeleteSecurityGroup
+            Resource: "*"
+      Roles:
+        - !Ref EMLJenkinsMasterRole
+  
+  # EMLElastiCachePolicy
+  EMLElastiCachePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EMLElastiCachePolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - elasticache:CreateCacheCluster
+              - elasticache:DescribeCacheClusters
+              - elasticache:DeleteCacheCluster
+              - elasticache:ModifyCacheCluster
+            Resource:
+              - !Sub "arn:aws:elasticache:${AWS::Region}:${AWS::AccountId}:cluster/eml-*"
+              - !Sub "arn:aws:elasticache:${AWS::Region}:${AWS::AccountId}:cluster/EML-*"
+        - Effect: Allow
+          Action:
+            - elasticache:CreateReplicationGroup
+            - elasticache:DeleteReplicationGroup
+            - elasticache:ModifyReplicationGroup
+            - elasticache:DescribeReplicationGroups
+            - elasticache:ListTagsForResource
+            - elasticache:AddTagsToResource
+            - elasticache:RemoveTagsFromResource
+          Resource:
+            - !Sub "arn:aws:elasticache:${AWS::Region}:${AWS::AccountId}:replicationgroup:eml-*"
+            - !Sub "arn:aws:elasticache:${AWS::Region}:${AWS::AccountId}:replicationgroup:EML-*"
+      Roles:
+        - !Ref EMLJenkinsMasterRole
 
 Outputs:
   EMLJenkinsMasterInstanceProfile:
