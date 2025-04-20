@@ -22,7 +22,7 @@ Resources:
   EmlS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${ProjectPrefix}-${Environment}-bucket"
+      BucketName: !Sub "${ProjectPrefix}-bucket"
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -82,7 +82,7 @@ Outputs:
       Name: !Sub "${ProjectPrefix}-S3BucketArn"
   EmlS3BucketName:
     Description: S3 bucket name.
-    Value: !Sub "${ProjectPrefix}-${Environment}-bucket"
+    Value: !Sub "${ProjectPrefix-bucket"
     Export:
       Name: !Sub "${ProjectPrefix}-S3BucketName"
 
