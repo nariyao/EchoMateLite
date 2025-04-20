@@ -14,6 +14,8 @@ Resources:
             Principal:
               Service:
                 - ec2.amazonaws.com
+              AWS:
+                - !Sub "arn:aws:iam::710271918664:role/EML_DevOps_CF_Role"
             Action:
               - sts:AssumeRole
       Path: "/"
@@ -54,20 +56,6 @@ Resources:
             Action:
               - cloudformation:ValidateTemplate
             Resource: "*"
-      Roles:
-        - !Ref EMLJenkinsMasterRole
-  # EML Admin policy
-  EMLAdminPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: EMLAdminPolicy
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action: "*"
-            Resource:
-              - !Sub "arn:aws:*::${AWS::AccountId}:*"
       Roles:
         - !Ref EMLJenkinsMasterRole
 
