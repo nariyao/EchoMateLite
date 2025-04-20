@@ -58,12 +58,12 @@ Resources:
   EmlRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: !Sub "${ProjectPrefix}-${Environment}-RestApi"
+      Name: !Sub "${ProjectPrefix}-RestApi"
       Description: !Sub "This is the REST API for ${ProjectName}"
+      IPAddressType: IPV4
       EndpointConfiguration:
         Types:
           - REGIONAL
-      MinimumCompressionSize: 1024
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
