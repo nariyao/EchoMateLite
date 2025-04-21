@@ -18,39 +18,6 @@ Parameters:
       - Dev
       - Prod
 Resources:
-  # 1. Add encryption for S3 bucket
-  EmlS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: eml-bucket
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      VersioningConfiguration:
-        Status: Enabled
-      LifecycleConfiguration:
-        Rules:
-          - Id: TransitionToIA
-            Status: Enabled
-            Transitions:
-              - StorageClass: STANDARD_IA
-                TransitionInDays: 90
-      Tags:
-        - Key: ProjectName
-          Value: !Ref ProjectName
-        - Key: Environment
-          Value: !Ref Environment
-        - Key: ProjectPrefix
-          Value: !Ref ProjectPrefix
-        - Key: Name
-          Value: eml-bucket"
-
   # Rest API
   EmlRestApi:
     Type: AWS::ApiGateway::RestApi
@@ -71,18 +38,6 @@ Resources:
           Value: !Sub "${ProjectPrefix}-RestApi"
 
 Outputs:
-  # S3 Bucket Outputs
-  EmlS3BucketArn:
-    Description: S3 bucket ARN.
-    Value: !GetAtt EmlS3Bucket.Arn
-    Export:
-      Name: !Sub "${ProjectPrefix}-S3BucketArn"
-  EmlS3BucketName:
-    Description: S3 bucket name.
-    Value: eml-bucket
-    Export:
-      Name: !Sub "${ProjectPrefix}-S3BucketName"
-
   # Rest API Outputs
   EmlRestApiId:
     Description: RESTFull API ID.

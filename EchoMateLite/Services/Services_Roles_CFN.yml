@@ -27,8 +27,7 @@ Resources:
               - "s3:PutObject"
               - "s3:ListBucket"
               - "s3:DeleteObject"
-            Resource: !ImportValue
-              Fn::Sub: "${ProjectPrefix}-S3BucketArn"
+            Resource: "*"
       Roles:
         - !Ref EmlImageServiceRoles
         - !Ref EmlUserServiceRoles
