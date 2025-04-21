@@ -165,13 +165,6 @@ pipeline{
         }
         stage('Validating CloudFormation Template'){
             parallel {
-                stage('Validating Services Roles CFN'){
-                    steps{
-                        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                            isCFNTemplateValid('./EchoMateLite/Services', 'Services_Roles_CFN.yml')
-                        }
-                    }
-                }
                 stage('Validating DynamoDB CFN'){
                     steps{
                         catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
@@ -200,28 +193,9 @@ pipeline{
                 deployCFNStack('./EchoMateLite/Services', 'Services-CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.json')
             }
         }
-        stage("Deploying Services Roles"){
-            steps{
-                echo "Deploying Services Roles CFN Stack..."
-                deployCFNStack('./EchoMateLite/Services', 'Services-Roles-CFN', 'Services_Roles_CFN.yml', 'Parameters/Services_Roles_CFN_Parameters.json', 'CAPABILITY_NAMED_IAM')
-            }
         }
         stage("Post deployment validation"){
             parallel {
-                stage("Post deployment validation for Services Roles CFN"){
-                    steps{
-                        echo "Post deployment validation for Services Roles CFN..."
-                        script {
-                            def stackName = "${env.PROJECT_PREFIX}-Services-Roles-CFN"
-                            def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
-                            if (result != 'CREATE_COMPLETE' && result != 'UPDATE_COMPLETE') {
-                                error("Post deployment validation failed for stack ${stackName}. Current status: ${result}")
-                            } else {
-                                echo "Post deployment validation successful for stack ${stackName}. Current status: ${result}"
-                            }
-                        }
-                    }
-                }
                 stage("Post deployment validation for Services CFN"){
                     steps{
                         echo "Post deployment validation for Services CFN..."
