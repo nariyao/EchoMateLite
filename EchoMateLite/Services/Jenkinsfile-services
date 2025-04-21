@@ -193,7 +193,6 @@ pipeline{
                 deployCFNStack('./EchoMateLite/Services', 'Services-CFN', 'Services_CFN.yml', 'Parameters/Services_CFN_Parameters.json')
             }
         }
-        }
         stage("Post deployment validation"){
             parallel {
                 stage("Post deployment validation for Services CFN"){
