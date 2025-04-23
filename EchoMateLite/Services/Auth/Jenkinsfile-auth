@@ -47,7 +47,7 @@ pipeline{
         }
         stage('Validate CloudFormation Template'){
             parallel {
-                stage('Validate Cognito CFN'){
+                stage('Validate Auth CFN'){
                     steps{
                         script{
                             isCFNTemplateVaild('EchoMateLite/Services/Auth', 'Auth_CFN.yml')
