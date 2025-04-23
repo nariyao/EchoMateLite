@@ -1,4 +1,3 @@
-@Library ('EchoMateLite') _
 def call(stackName) {
     echo "Deleting CloudFormation stack: ${stackName}"
     def result = sh(script: "aws cloudformation delete-stack --stack-name ${stackName}", returnStatus: true)

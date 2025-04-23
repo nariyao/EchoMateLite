@@ -1,4 +1,3 @@
-@Library ('EchoMateLite') _
 def call(templatePath, templateName) {
     echo "Validating CloudFormation template: ${templateName}"
     dir(templatePath) {

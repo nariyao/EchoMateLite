@@ -1,4 +1,3 @@
-@Library ('EchoMateLite') _
 def call(templatePath, stackName, templateName, parametersFile='Parameters.yml', iamCapabilities = '') {
     dir(templatePath) {
         // Validate input parameters
