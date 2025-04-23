@@ -1,4 +1,4 @@
-
+@Library ('EchoMateLite') _
 pipeline{
     agent any
     environment {
@@ -6,6 +6,8 @@ pipeline{
         PROJECT_NAME = 'EchoMateLite'
         BUILD_NUMBER = "${env.BUILD_ID}"
         PRJECT_PREFIX =  "eml"
+        AWS_BUCKET_NAME = "eml-artifacts-bucket"
+        AWS_REGION = "us-east-1"
     }
     stages{
         stage('Checkout'){
@@ -18,11 +20,28 @@ pipeline{
         }
         stage('Build'){
             steps{
-                dir("EchoMateLite/Services/Auth") {
+                dir("EchoMateLite/Services/Auth"){ 
                     echo "Building the project..."
                     script{
-                        npm install 
+                        echo "Installing dependencies..."
+                        sh "cd ./aws_lambda_auth && npm install"
                     }
+                    script{
+                        echo "creating zip file..."
+                        sh "zip -r ./aws_lambda_auth.zip ./aws_lambda_auth/*"
+                        sh "tree"
+                    }
+
+                }
+            }
+        }
+        stage('Upload to S3'){
+            steps{
+                script{
+                    echo "Uploading to S3..."
+                    sh """
+                        aws s3 cp EchoMateLite/Services/Auth/aws_lambda_auth.zip s3://${AWS_BUCKET_NAME}/Services/Auth/aws_lambda_auth.zip --region ${AWS_REGION}
+                    """
                 }
             }
         }
@@ -31,20 +50,20 @@ pipeline{
                 stage('Validate Cognito CFN'){
                     steps{
                         script{
-                            isAWS_CFN_Vaild('EchoMateLite/Services/Auth', 'Auth_CFN.yml')
+                            isCFNTemplateVaild('EchoMateLite/Services/Auth', 'Auth_CFN.yml')
                         }
                     }
                 }
                 stage('Validate Cognito CFN'){
                     steps{
                         script{
-                            isAWS_CFN_Vaild('EchoMateLite/Services/Cognito', 'Cognito_CFN.yml')
+                            isCFNTemplateVaild('EchoMateLite/Services/Auth', 'Cognito_CFN.yml')
                         }
                     }
                 }
             }
         }
-        stage('Test'){
+        stage('deploy'){
             steps{
                 script{
                     echo "Running tests..."
