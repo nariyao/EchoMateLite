@@ -47,14 +47,14 @@ pipeline {
                 stage('Auth CFN') {
                     steps {
                         script {
-                            isCFNTemplateVaild("${AUTH_DIR}", 'Auth_CFN.yml')
+                            isCFNTemplateValid("${AUTH_DIR}", 'Auth_CFN.yml')
                         }
                     }
                 }
                 stage('Cognito CFN') {
                     steps {
                         script {
-                            isCFNTemplateVaild("${AUTH_DIR}", 'Cognito_CFN.yml') 
+                            isCFNTemplateValid("${AUTH_DIR}", 'Cognito_CFN.yml') 
                         }
                     }
                 }
