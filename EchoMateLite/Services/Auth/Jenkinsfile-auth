@@ -9,7 +9,7 @@ pipeline {
         PROJECT_NAME = 'EchoMateLite'
         BUILD_NUMBER = "${env.BUILD_ID}"
         PRJECT_PREFIX = "eml"
-        AWS_ARTIFACTS_BUCKET = "eml-artifact-bucket"
+        AWS_ARTIFACTS_BUCKET = "eml-artifacts-bucket"
         AWS_REGION = "us-east-1"
         AUTH_DIR = "EchoMateLite/Services/Auth"
         LAMBDA_DIR = "aws_lambda_auth"
