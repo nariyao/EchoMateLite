@@ -1,4 +1,4 @@
-@Library ("EchoMateLite") _
+@Library ("EchoMateLite@services") _
 
 pipeline {
     agent any
