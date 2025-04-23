@@ -1,3 +1,5 @@
+@Library ('EchoMateLite') _
+
 node {
     stage('Determine Nested Jenkinsfile') {
         def branchName = env.BRANCH_NAME
