@@ -10,9 +10,5 @@
     {
         "ParameterKey": "Environment",
         "ParameterValue": "dev"
-    },
-    {
-        "ParameterKey": "Build_Number",
-        "ParameterValue": 
     }
 ]
