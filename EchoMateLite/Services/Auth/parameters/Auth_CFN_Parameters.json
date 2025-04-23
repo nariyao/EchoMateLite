@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey": "ProjectName",
+        "ParameterValue": "EchoMateLite"
+    },
+    {
+        "ParameterKey": "ProjectPrefix",
+        "ParameterValue": "eml"
+    },
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "dev"
+    }
+]

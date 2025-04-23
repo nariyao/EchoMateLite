@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFormation template for Lambda Auth function"
+
+Parameters:
+  S3BucketName:
+    Type: String
+    Description: Name of S3 bucket containing Lambda code
+
+  S3Key:
+    Type: String
+    Description: S3 key/path to Lambda function code
+
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  AuthFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-auth-function
+      Runtime: nodejs22.x
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref S3BucketName
+        S3Key: !Ref S3Key
+      Timeout: 30
+      MemorySize: 128
+      Environment:
+        Variables:
+          STACK_NAME: !Ref AWS::StackName
+
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AuthFunction}
+      RetentionInDays: 30
+
+Outputs:
+  AuthFunctionArn:
+    Description: ARN of the Auth Lambda function
+    Value: !GetAtt AuthFunction.Arn
