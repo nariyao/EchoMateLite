@@ -9,7 +9,7 @@ pipeline {
         PROJECT_NAME = 'EchoMateLite'
         BUILD_NUMBER = "${env.BUILD_ID}"
         PRJECT_PREFIX = "eml"
-        AWS_ARTIFACT_BUCKET_NAME = "eml-artifact-bucket"
+        AWS_ARTIFACTS_BUCKET = "eml-artifact-bucket"
         AWS_REGION = "us-east-1"
         AUTH_DIR = "EchoMateLite/Services/Auth"
         LAMBDA_DIR = "aws_lambda_auth"
@@ -39,7 +39,7 @@ pipeline {
         }
         stage('Upload to S3') {
             steps {
-                sh "aws s3 cp ${AUTH_DIR}/${LAMBDA_DIR}.zip s3://${AWS_BUCKET_NAME}/Services/Auth/${LAMBDA_DIR}.zip --region ${AWS_REGION}"
+                sh "aws s3 cp ${AUTH_DIR}/${LAMBDA_DIR}.zip s3://${AWS_ARTIFACTS_BUCKET}/Services/Auth/${LAMBDA_DIR}.zip --region ${AWS_REGION}"
             }
         }
         stage('Validate Templates') {
