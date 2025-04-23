@@ -1,3 +1,4 @@
+
 pipeline{
     agent any
     environment {
@@ -7,13 +8,39 @@ pipeline{
         PRJECT_PREFIX =  "eml"
     }
     stages{
-        stage('Build'){
+        stage('Checkout'){
             steps{
                 script{
+                    echo "Checking out the code..."
+                    checkout scm
+                }
+            }
+        }
+        stage('Build'){
+            steps{
+                dir("EchoMateLite/Services/Auth") {
                     echo "Building the project..."
-                    echo "Project Name: ${PROJECT_NAME}"
-                    echo "Build Number: ${BUILD_NUMBER}"
-                    echo "Project Prefix: ${PRJECT_PREFIX}"
+                    script{
+                        npm install 
+                    }
+                }
+            }
+        }
+        stage('Validate CloudFormation Template'){
+            parallel {
+                stage('Validate Cognito CFN'){
+                    steps{
+                        script{
+                            isAWS_CFN_Vaild('EchoMateLite/Services/Auth', 'Auth_CFN.yml')
+                        }
+                    }
+                }
+                stage('Validate Cognito CFN'){
+                    steps{
+                        script{
+                            isAWS_CFN_Vaild('EchoMateLite/Services/Cognito', 'Cognito_CFN.yml')
+                        }
+                    }
                 }
             }
         }

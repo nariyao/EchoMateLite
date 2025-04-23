@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFormation template for creating Amazon Cognito resources"
+
+Parameters:
+  ProjectName:
+    Type: String
+    Description: The name of the project for which the Cognito resources are being created
+    Default: EchoMateLite
+  ProjectPrefix:
+    Type: String
+    Description: The prefix for the resources being created.
+    Default: eml
+  Environment:
+    Type: String
+    Description: The environment for which the Cognito resources are being created (e.g., dev, prod)
+    Default: dev
+    allowedValues:
+      - dev
+      - prod
+
+Resources:
+  # Cognito User Pool
+  EmlCognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${ProjectPrefix}-userpool"
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - username
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          RequireUppercase: true
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: false
+          Required: true
+        - Name: username
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+
+  EmlCognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "${ProjectPrefix}-userpool-client"
+      UserPoolId: !Ref EmlCognitoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+Outputs:
+  UserPoolId:
+    Description: ID of the Cognito User Pool
+    Value: !Ref EmlCognitoUserPool
+    Export:
+      Name: !Sub "${ProjectPrefix}-UserPoolId"
+
+  UserPoolClientId:
+    Description: ID of the Cognito User Pool Client
+    Value: !Ref EmlCognitoUserPoolClient
+    Export:
+      Name: !Sub "${ProjectPrefix}-UserPoolClientId"
