@@ -1,4 +1,3 @@
-@Library ('EchoMateLite') _
 def call(stackName, statusType = 'CU') {
     echo "Waiting for stack ${stackName} operation to complete..."
     def status = ''
