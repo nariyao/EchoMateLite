@@ -14,7 +14,7 @@ Parameters:
     Type: String
     Description: The environment for which the Cognito resources are being created (e.g., dev, prod)
     Default: dev
-    allowedValues:
+    AllowedValues: # Fixed capitalization of AllowedValues parameter
       - dev
       - prod
 
@@ -28,8 +28,7 @@ Resources:
         AllowAdminCreateUserOnly: false
       AutoVerifiedAttributes:
         - email
-      UsernameAttributes:
-        - username
+      UsernameAttributes: # UsernameAttributes should contain email only since it's also in Schema
         - email
       Policies:
         PasswordPolicy:
