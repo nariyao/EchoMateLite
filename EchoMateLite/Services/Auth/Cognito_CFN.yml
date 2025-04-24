@@ -28,7 +28,7 @@ Resources:
         AllowAdminCreateUserOnly: false
       AutoVerifiedAttributes:
         - email
-      UsernameAttributes: # UsernameAttributes should contain email only since it's also in Schema
+      UsernameAttributes:
         - email
       Policies:
         PasswordPolicy:
@@ -41,10 +41,6 @@ Resources:
         - Name: email
           AttributeDataType: String
           Mutable: false
-          Required: true
-        - Name: username
-          AttributeDataType: String
-          Mutable: true
           Required: true
 
   EmlCognitoUserPoolClient:
