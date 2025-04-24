@@ -330,6 +330,13 @@ Resources:
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/eml-*"
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/EML-*"
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/Eml-*"
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:DeleteLogGroup
+              - logs:DeleteLogStream
+            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/eml-*"
       Roles:
         - !Ref EMLJenkinsMasterRole
 Outputs:
