@@ -256,72 +256,51 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - cognito:CreateUserPool
-              - cognito:DeleteUserPool
-              - cognito:DescribeUserPool
-              - cognito:ListUserPools
-              - cognito:UpdateUserPool
-              - cognito:TagResource
-              - cognito:UntagResource
-              - cognito:ListTagsForResource
-              - cognito:CreateUserPoolClient
-              - cognito:DeleteUserPoolClient
-              - cognito:DescribeUserPoolClient
-              - cognito:ListUserPoolClients
-              - cognito:UpdateUserPoolClient
-              - cognito:TagUserPoolClient
-              - cognito:UntagUserPoolClient
-              - cognito:ListTagsForUserPoolClient
-              - cognito:CreateIdentityPool
-              - cognito:DeleteIdentityPool
-              - cognito:DescribeIdentityPool
-              - cognito:ListIdentityPools
-              - cognito:UpdateIdentityPool
-              - cognito:TagIdentityPool
-              - cognito:UntagIdentityPool
-              - cognito:ListTagsForIdentityPool
-              - cognito:CreateIdentityPoolRoleAttachment
-              - cognito:DeleteIdentityPoolRoleAttachment
-              - cognito:DescribeIdentityPoolRoleAttachment
-              - cognito:ListIdentityPoolRoleAttachments
-              - cognito:UpdateIdentityPoolRoleAttachment
+              - iam:CreateRole
+              - iam:DeleteRole
+              - iam:GetRole
+              - iam:PutRolePolicy
+              - iam:DeleteRolePolicy
+              - iam:TagRole
+              - iam:UntagRole
+            Resource:
+              - arn:aws:iam::710271918664:role/Eml-*
+              - arn:aws:iam::710271918664:role/EML-*
+              - arn:aws:iam::710271918664:role/eml-*
           - Effect: Allow
             Action:
               - cognito-idp:CreateUserPool
+              - cognito-idp:CreateUserPoolClient
               - cognito-idp:DeleteUserPool
+              - cognito-idp:DeleteUserPoolClient
               - cognito-idp:DescribeUserPool
-              - cognito-idp:ListUserPools
               - cognito-idp:UpdateUserPool
+              - cognito-idp:UpdateUserPoolClient
               - cognito-idp:TagResource
               - cognito-idp:UntagResource
-              - cognito-idp:ListTagsForResource
-              - cognito-idp:CreateUserPoolClient
-              - cognito-idp:DeleteUserPoolClient
-              - cognito-idp:DescribeUserPoolClient
-              - cognito-idp:ListUserPoolClients
-              - cognito-idp:UpdateUserPoolClient
-              - cognito-idp:TagUserPoolClient
-              - cognito-idp:UntagUserPoolClient
-              - cognito-idp:ListTagsForUserPoolClient
-              - cognito-idp:CreateIdentityPool
-              - cognito-idp:DeleteIdentityPool
-              - cognito-idp:DescribeIdentityPool
-              - cognito-idp:ListIdentityPools
-              - cognito-idp:UpdateIdentityPool
-              - cognito-idp:TagIdentityPool
-              - cognito-idp:UntagIdentityPool
-              - cognito-idp:ListTagsForIdentityPool
-              - cognito-idp:CreateIdentityPoolRoleAttachment
-              - cognito-idp:DeleteIdentityPoolRoleAttachment
-              - cognito-idp:DescribeIdentityPoolRoleAttachment
-              - cognito-idp:ListIdentityPoolRoleAttachments
-              - cognito-idp:UpdateIdentityPoolRoleAttachment
-            Resource:
-              - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/eml-*"
-              - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/EML-*"
-              - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/Eml-*"
+            Resource: arn:aws:cognito-idp:us-east-1:710271918664:userpool/*
       Roles:
         - !Ref EMLJenkinsMasterRole
+
+  # CloudWatch policy
+  EMLCloudWatchPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EMLCloudWatchPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - cloudwatch:PutMetricData
+              - cloudwatch:GetMetricStatistics
+              - cloudwatch:ListMetrics
+              - cloudwatch:GetDashboard
+              - cloudwatch:PutDashboard
+            Resource: "*"
+      Roles:
+        - !Ref EMLJenkinsMasterRole
+
 Outputs:
   EMLJenkinsMasterInstanceProfile:
     Description: Instance profile for the EML Jenkins master
