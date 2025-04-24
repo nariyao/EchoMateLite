@@ -12,7 +12,7 @@
         "ParameterValue": "dev"
     },
     {
-        "ParameterKey": "S3BuchketName",
+        "ParameterKey": "S3BucketName",
         "ParameterValue": "eml-artifacts-bucket"
     },
     {
