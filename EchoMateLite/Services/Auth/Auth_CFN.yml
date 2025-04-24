@@ -71,12 +71,12 @@ Resources:
           ElastiCacheEndpoint: !Ref ElastiCacheEndpoint
           ElastiCachePort: !Ref ElastiCachePort
 
-  LambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub "/aws/lambda/${ProjectPrefix}-auth-function"
-      RetentionInDays: 30
-      DependsOn: LambdaExecutionRole
+  # LambdaLogGroup:
+  #   Type: AWS::Logs::LogGroup
+  #   Properties:
+  #     LogGroupName: !Sub "/aws/lambda/${ProjectPrefix}-auth-function"
+  #     RetentionInDays: 30
+  #     DependsOn: LambdaExecutionRole
 Outputs:
   AuthFunctionArn:
     Description: ARN of the Auth Lambda function
