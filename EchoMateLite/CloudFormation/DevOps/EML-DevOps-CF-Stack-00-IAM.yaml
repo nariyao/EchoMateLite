@@ -301,6 +301,37 @@ Resources:
       Roles:
         - !Ref EMLJenkinsMasterRole
 
+  # Lambda policy
+  EMLLambdaPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: EMLLambdaPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:CreateFunction
+              - lambda:DeleteFunction
+              - lambda:GetFunction
+              - lambda:UpdateFunctionCode
+              - lambda:UpdateFunctionConfiguration
+              - lambda:AddPermission
+              - lambda:RemovePermission
+            Resource:
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:eml-*"
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EML-*"
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:Eml-*"
+          - Effect: Allow
+            Action:
+              - iam:AttachRolePolicy
+              - iam:DetachRolePolicy
+            Resource:
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/eml-*"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/EML-*"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/Eml-*"
+      Roles:
+        - !Ref EMLJenkinsMasterRole
 Outputs:
   EMLJenkinsMasterInstanceProfile:
     Description: Instance profile for the EML Jenkins master
