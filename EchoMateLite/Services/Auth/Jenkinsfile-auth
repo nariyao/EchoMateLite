@@ -8,7 +8,7 @@ pipeline {
     environment {
         PROJECT_NAME = 'EchoMateLite'
         BUILD_NUMBER = "${env.BUILD_ID}"
-        PRJECT_PREFIX = "eml"
+        PROJECT_PREFIX = "eml"
         AWS_ARTIFACTS_BUCKET = "eml-artifacts-bucket"
         AWS_REGION = "us-east-1"
         AUTH_DIR = "EchoMateLite/Services/Auth"
@@ -66,7 +66,7 @@ pipeline {
                 deployCFNStack('./EchoMateLite/Services/Auth', 'Cognito-CFN', 'Cognito_CFN.yml', 'parameters/Cognito_CFN_Parameters.json')
                 echo "Deploying Cognito CFN Stack done..."
                 echo "Deploying Auth CFN Stack..."
-                deployCFNStack('./EchoMateLite/Services/Auth', 'Auth-CFN', 'Auth_CFN.yml', 'parameters/Auth_CFN_Parameters.json')
+                deployCFNStack('./EchoMateLite/Services/Auth', 'Auth-CFN', 'Auth_CFN.yml', 'parameters/Auth_CFN_Parameters.json', "CAPABILITY_IAM")
                 echo "Deploying Auth CFN Stack done..."
             }
         }
