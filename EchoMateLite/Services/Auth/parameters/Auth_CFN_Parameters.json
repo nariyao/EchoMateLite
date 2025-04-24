@@ -10,6 +10,21 @@
     {
         "ParameterKey": "Environment",
         "ParameterValue": "dev"
+    },
+    {
+        "ParameterKey": "S3BuchketName",
+        "ParameterValue": "eml-artifacts-bucket"
+    },
+    {
+        "ParameterKey": "S3Key",
+        "ParameterValue": "Services/Auth/aws_lambda_auth.zip"
+    },
+    {
+        "ParameterKey": "ElastiCacheEndpoint",
+        "ParameterValue": "eml-elasticache-endpoint"
+    },
+    {
+        "ParameterKey": "ElastiCachePort",
+        "ParameterValue": "6379"
     }
-    
 ]
