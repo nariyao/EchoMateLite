@@ -5,10 +5,33 @@ Parameters:
   S3BucketName:
     Type: String
     Description: Name of S3 bucket containing Lambda code
-
+    Default: eml-artifacts-bucket
   S3Key:
     Type: String
     Description: S3 key/path to Lambda function code
+    Default: services/Auth/aws_lambda_auth.zip
+  ProjectPrefix:
+    Type: String
+    Description: Prefix for the project resources
+    Default: eml
+  ProjectName:
+    Type: String
+    Description: Name of the project for which the Lambda function is being created
+    Default: EchoMateLite
+  Environment:
+    Type: String
+    Description: Environment for which the Lambda function is being created (e.g., dev, prod)
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+  ElastiCacheEndpoint:
+    Type: String
+    Description: Endpoint for the ElastiCache Redis instance
+  ElastiCachePort:
+    Type: String
+    Description: Port for the ElastiCache Redis instance
+    Default: "6379"
 
 Resources:
   LambdaExecutionRole:
@@ -29,7 +52,7 @@ Resources:
   AuthFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-auth-function
+      FunctionName: !Sub "${ProjectPrefix}-auth-function"
       Runtime: nodejs22.x
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -41,14 +64,22 @@ Resources:
       Environment:
         Variables:
           STACK_NAME: !Ref AWS::StackName
+          USER_POOL_ID: !ImportValue
+            Fn::Sub: "${ProjectPrefix}-UserPoolId"
+          USER_POOL_CLIENT_ID: !ImportValue
+            Fn::Sub: "${ProjectPrefix}-UserPoolClientId"
+          ElastiCacheEndpoint: !Ref ElastiCacheEndpoint
+          ElastiCachePort: !Ref ElastiCachePort
 
   LambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${AuthFunction}
+      LogGroupName: !Sub "/aws/lambda/${ProjectPrefix}-auth-function"
       RetentionInDays: 30
-
+      DependsOn: LambdaExecutionRole
 Outputs:
   AuthFunctionArn:
     Description: ARN of the Auth Lambda function
     Value: !GetAtt AuthFunction.Arn
+    Export:
+      Name: !Sub "${ProjectPrefix}-AuthFunctionArn"

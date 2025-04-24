@@ -61,8 +61,45 @@ pipeline {
             }
         }
         stage('Deploy') {
-            steps {
-                echo "Deploying the project..."
+            steps{
+                echo "Deploying Cognito CFN Stack..."
+                deployCFNStack('./EchoMateLite/Services/Auth', 'Cognito-CFN', 'Cognito_CFN.yml', 'parameters/Cognito_CFN_Parameters.json')
+                echo "Deploying Cognito CFN Stack done..."
+                echo "Deploying Auth CFN Stack..."
+                deployCFNStack('./EchoMateLite/Services/Auth', 'Auth-CFN', 'Auth_CFN.yml', 'parameters/Auth_CFN_Parameters.json')
+                echo "Deploying Auth CFN Stack done..."
+            }
+        }
+        stage("Post-Deployment Validation") {
+            parallel {
+                stage("Varify Cognito CFN"){
+                    steps{
+                        echo "Post deployment varification for Cognito CFN..."
+                        script {
+                            def stackName = "${env.PROJECT_PREFIX}-Cognito-CFN"
+                            def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
+                            if (result != 'CREATE_COMPLETE' && result != 'UPDATE_COMPLETE') {
+                                error("Post deployment validation failed for stack ${stackName}. Current status: ${result}")
+                            } else {
+                                echo "Post deployment validation successful for stack ${stackName}. Current status: ${result}"
+                            }
+                        }
+                    }
+                }
+                stage("Varify Auth CFN"){
+                    steps{
+                        echo "Post deployment varification for Auth CFN..."
+                        script {
+                            def stackName = "${env.PROJECT_PREFIX}-Auth-CFN"
+                            def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
+                            if (result != 'CREATE_COMPLETE' && result != 'UPDATE_COMPLETE') {
+                                error("Post deployment validation failed for stack ${stackName}. Current status: ${result}")
+                            } else {
+                                echo "Post deployment validation successful for stack ${stackName}. Current status: ${result}"
+                            }
+                        }
+                    }
+                }
             }
         }
     }
