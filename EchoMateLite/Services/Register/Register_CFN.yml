@@ -64,8 +64,10 @@ Resources:
         SecurityGroupIds:
           - !ImportValue eml-LambdaSecurityGroup
         SubnetIds:
-          - !ImportValue eml-PrivateSubnet1-Dev
-          - !ImportValue eml-PrivateSubnet2-Dev
+          - !ImportValue
+            Fn::Sub: eml-PrivateSubnet1-${Environment}
+          - !ImportValue
+            Fn::Sub: eml-PrivateSubnet2-${Environment}
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
