@@ -5,7 +5,6 @@ Parameters:
   S3BucketName:
     Type: String
     Description: Name of S3 bucket containing Lambda source code
-
   S3Key:
     Type: String
     Description: S3 key for Lambda source code zip file
