@@ -321,6 +321,9 @@ Resources:
               - lambda:UpdateFunctionConfiguration
               - lambda:AddPermission
               - lambda:RemovePermission
+              - lambda:InvokeFunction
+              - lambda:TagResource
+              - lambda:UntagResource
             Resource:
               - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:eml-*"
               - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:EML-*"
