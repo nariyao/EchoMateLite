@@ -1,6 +1,6 @@
 const AWS = require('aws-sdk');
 
-AWS.config.update({ region: process.env.AWS_REGION });
+AWS.config.update({ region: process.env.MY_AWS_REGION });
 const cognito = new AWS.CognitoIdentityServiceProvider();
 
 export default Register = async (event) => {

@@ -59,7 +59,7 @@ Resources:
             Fn::Sub: "${ProjectPrefix}-UserPoolClientId"
           USER_POOL_ID: !ImportValue
             Fn::Sub: "${ProjectPrefix}-UserPoolId"
-          AWS_REGION: !Ref AWS::Region
+          MY_AWS_REGION: !Ref AWS::Region
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue eml-LambdaSecurityGroup
