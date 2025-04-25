@@ -4,6 +4,10 @@
         "ParameterValue": "EchoMateLite"
     },
     {
+        "ParameterKey": "S3key",
+        "ParameterValue": "Services/Register/aws_lambda_register.zip"
+    },
+    {
         "ParameterKey": "ProjectPrefix",
         "ParameterValue": "eml"
     },
@@ -14,9 +18,5 @@
     {
         "ParameterKey": "S3BucketName",
         "ParameterValue": "eml-artifacts-bucket"
-    },
-    {
-        "ParameterKey": "S3key",
-        "ParameterValue": "services/register/aws_lambda_register.zip"
     }
 ]
