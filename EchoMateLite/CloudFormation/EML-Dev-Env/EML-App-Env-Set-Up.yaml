@@ -5,7 +5,10 @@ Description: "VPC with public and private subnets, IGW, route tables, security g
 Parameters:
   Enviroment:
     Type: String
-    Default: Dev
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
 
   ProjectPrefix:
     Type: String
@@ -210,6 +213,38 @@ Resources:
         - Key: Project
           Value: !Ref ProjectPrefix
 
+  # Security Group for Lambda
+  EmlLambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP/HTTPS inbound traffic
+      VpcId: !Ref EmlVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: EML Lambda Security Group
+        - Key: Enviroment
+          Value: !Ref Enviroment
+        - Key: Project
+          Value: !Ref ProjectPrefix
+
   # Application Load Balancer
   EmlApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -269,3 +304,15 @@ Outputs:
     Value: !Ref EmlApplicationLoadBalancer
     Export:
       Name: !Sub "${ProjectPrefix}-LoadBalancerArn-${Enviroment}"
+
+  EmlWebSecurityGroupId:
+    Description: Security Group ID for the web application
+    Value: !Ref EmlWebSecurityGroup
+    Export:
+      Name: !Sub "${ProjectPrefix}-WebSecurityGroupId"
+
+  EmlLambdaSecurityGroupId:
+    Description: Security Group ID for the Lambda function
+    Value: !Ref EmlLambdaSecurityGroup
+    Export:
+      Name: !Sub "${ProjectPrefix}-LambdaSecurityGroup"
