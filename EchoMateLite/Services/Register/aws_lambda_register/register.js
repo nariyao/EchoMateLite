@@ -1,4 +1,6 @@
 const AWS = require('aws-sdk');
+
+AWS.config.update({ region: process.env.AWS_REGION });
 const cognito = new AWS.CognitoIdentityServiceProvider();
 
 export default Register = async (event) => {
@@ -22,9 +24,20 @@ export default Register = async (event) => {
     
     try {
         const response = await cognito.signUp(params).promise();
+        resData = {
+            UserConfirmed: response.UserConfirmed,
+            UserSub: response.UserSub,
+            UserEmail: response.UserAttributes.find(attr => attr.Name === 'email').Value
+        };
+        if (response.UserConfirmed) {
+            return {
+                statusCode: 200,
+                body: JSON.stringify(resData)
+            };
+        }
         return {
             statusCode: 200,
-            body: JSON.stringify('User registered successfully!')
+            body: JSON.stringify(resData)
         };
     } catch (error) {
         return {
