@@ -137,6 +137,9 @@ Resources:
               - apigateway:GET
               - apigateway:PUT
               - apigateway:DELETE
+              - apigateway:PATCH
+              - apigateway:HEAD
+              - apigateway:OPTIONS
             Resource:
               - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis*"
               - !Sub "arn:aws:apigateway:${AWS::Region}::/account*"
