@@ -25,6 +25,8 @@ Resources:
   RegisterLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub "${ProjectPrefix}-RegisterLambdaExecutionRole"
+      Description: Role for Lambda execution
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -40,7 +42,7 @@ Resources:
   EmlRegisterLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub "${ProjectPrefix}-RegisterLambdaFunction-${Environment}"
+      FunctionName: !Sub "${ProjectPrefix}-RegisterLambdaFunction"
       Description: Lambda function for EML registration
       Code:
         S3Bucket: !Ref S3BucketName
@@ -60,14 +62,6 @@ Resources:
           USER_POOL_ID: !ImportValue
             Fn::Sub: "${ProjectPrefix}-UserPoolId"
           MY_AWS_REGION: !Ref AWS::Region
-      VpcConfig:
-        SecurityGroupIds:
-          - !ImportValue eml-LambdaSecurityGroup
-        SubnetIds:
-          - !ImportValue
-            Fn::Sub: eml-PrivateSubnet1-${Environment}
-          - !ImportValue
-            Fn::Sub: eml-PrivateSubnet2-${Environment}
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
