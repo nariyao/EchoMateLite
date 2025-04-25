@@ -6,13 +6,14 @@ const cognito = new AWS.CognitoIdentityServiceProvider();
 export default Register = async (event) => {
     const userPoolId = process.env.USER_POOL_ID;
     const clientId = process.env.CLIENT_ID;
-    const username = event.username;
-    const password = event.password;
+    const email = JSON.parse(event.body).email;
+    const password = JSON.parse(event.body).password;
     const email = event.email;
     
     const params = {
         ClientId: clientId,
-        Username: username,
+        UserPoolId: userPoolId,
+        Username: email,
         Password: password,
         UserAttributes: [
             {
