@@ -8,9 +8,16 @@ exports.handler = async (event) => {
        case 'POST/emailConfirmation':
            return emailConfirmation(event);
        default:
+              console.log('Invalid request:', event.httpMethod, event.resource);
+              console.log('Event:', event);
+            let bodyData = {
+                message: 'Invalid request',
+                method: event.httpMethod,
+                resource: event.resource
+            };
+            } 
            return {
                statusCode: 404,
-               body: JSON.stringify('Invalid request')
+               body: JSON.stringify(bodyData)
            };
-   }
-};
+}

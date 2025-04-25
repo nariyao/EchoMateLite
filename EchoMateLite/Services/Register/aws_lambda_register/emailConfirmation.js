@@ -3,7 +3,7 @@ const cognito = new AWS.CognitoIdentityServiceProvider();
 
 export default emailConfirmation= async (event) => {
     const userPoolId = process.env.USER_POOL_ID;
-    const clientId = process.CLIENT_ID;
+    const clientId = process.env.USER_POOL_CLIENT_ID;
     const username = event.username;
     const confirmationCode = event.confirmationCode;
     
