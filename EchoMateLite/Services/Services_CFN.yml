@@ -13,10 +13,10 @@ Parameters:
   Environment:
     Type: String
     Description: Input stage name.
-    Default: Dev
+    Default: dev
     AllowedValues:
-      - Dev
-      - Prod
+      - dev
+      - prod
 Resources:
   # Rest API
   EmlRestApi:
@@ -37,6 +37,14 @@ Resources:
         - Key: Name
           Value: !Sub "${ProjectPrefix}-RestApi"
 
+  # API Gateway resource for the root path
+  EmlRootResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt EmlRestApi.RootResourceId
+      PathPart: "api"
+      RestApiId: !Ref EmlRestApi
+
 Outputs:
   # Rest API Outputs
   EmlRestApiId:
@@ -54,3 +62,8 @@ Outputs:
     Value: !Sub "https://${EmlRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
     Export:
       Name: !Sub "${ProjectPrefix}-RestApiEndpoint"
+  EmlRootResourceId:
+    Description: Root resource ID.
+    Value: !Ref EmlRootResource
+    Export:
+      Name: !Sub eml-ApiResourceId
