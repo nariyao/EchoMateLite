@@ -4,21 +4,22 @@ const cognito = new AWS.CognitoIdentityServiceProvider();
 export default emailConfirmation= async (event) => {
     const userPoolId = process.env.USER_POOL_ID;
     const clientId = process.env.USER_POOL_CLIENT_ID;
-    const username = event.username;
-    const confirmationCode = event.confirmationCode;
+    const email = event.queryStringParameters.email;
+    const confirmationCode = JSON.parse(event.body).confirmationCode;
     
     const params = {
         ClientId: clientId,
-        Username: username,
+        email: email,
         ConfirmationCode: confirmationCode
     };
     
     try {
         const response = await cognito.confirmSignUp(params).promise();
-        return {
-            statusCode: 200,
-            body: JSON.stringify('Email confirmed successfully!')
-        };
+        if (response.UserConfirmed) {
+            console.log(`User ${email} confirmed successfully.`);
+        } else {
+            throw new Error(`User ${email} could not be confirmed.`);
+        }
     } catch (error) {
         return {
             statusCode: 400,
