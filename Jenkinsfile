@@ -3,7 +3,7 @@ node {
         def branchName = env.BRANCH_NAME
 
         def jenkinsfiles = [
-            'auth': 'EchoMateLite/Services/Register/Jenkinsfile-register',
+            'register': 'EchoMateLite/Services/Register/Jenkinsfile-register',
         ]
 
         // Select the Jenkinsfile based on the branch name
