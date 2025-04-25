@@ -40,15 +40,15 @@ pipeline {
         }
         stage('Upload to S3') {
             steps {
-                sh "aws s3 cp ${SOURCE}/${LAMBDA_DIR}.zip s3://${AWS_ARTIFACTS_BUCKET}/Services/Auth/${LAMBDA_DIR}.zip --region ${AWS_REGION}"
+                sh "aws s3 cp ${SOURCE}/${LAMBDA_DIR}.zip s3://${AWS_ARTIFACTS_BUCKET}/Services/Register/${LAMBDA_DIR}.zip --region ${AWS_REGION}"
             }
         }
         stage('Validate Templates') {
             parallel {
-                stage('Auth CFN') {
+                stage('Register CFN') {
                     steps {
                         script {
-                            isCFNTemplateValid("${SOURCE}", 'Auth_CFN.yml')
+                            isCFNTemplateValid("${SOURCE}", 'Register_CFN.yml')
                         }
                     }
                 }
@@ -57,7 +57,7 @@ pipeline {
         stage('Deploy') {
             steps{
                 echo "Deploying Register CFN Stack..."
-                deployCFNStack('./EchoMateLite/Services/Auth', 'Register-CFN', 'Register_CFN.yml', 'parameters/Register_CFN_Parameters.json', "CAPABILITY_IAM")
+                deployCFNStack('./EchoMateLite/Services/Register', 'Register-CFN', 'Register_CFN.yml', 'parameters/Register_CFN_Parameters.json', "CAPABILITY_IAM")
                 echo "Deploying Register CFN Stack done..."
             }
         }
