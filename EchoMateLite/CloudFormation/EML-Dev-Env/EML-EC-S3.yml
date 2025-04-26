@@ -35,7 +35,7 @@ Resources:
     Properties:
       GroupDescription: Security group for Redis cluster
       VpcId:
-        Fn::ImportValue: !Sub "${ProjectPrefix}-VPCID-${Environment}"
+        Fn::ImportValue: !Sub "${ProjectPrefix}-VPCId-${Environment}"
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 6379
