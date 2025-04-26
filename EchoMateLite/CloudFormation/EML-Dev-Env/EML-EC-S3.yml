@@ -3,7 +3,7 @@ Description: "Template to create ElastiCache Redis and S3 bucket"
 
 Parameters:
   ProjectName:
-    Type: string
+    Type: String
     Description: "Name of the project"
     Default: EchoMateLite
   ProjectPrefix:
