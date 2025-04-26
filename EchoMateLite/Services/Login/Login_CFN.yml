@@ -74,6 +74,10 @@ Resources:
           USER_POOL_ID: !ImportValue
             Fn::Sub: "${ProjectPrefix}-UserPoolId"
           MY_AWS_REGION: !Ref AWS::Region
+          ELASTICACHE_REDIS_ENDPOINT: !ImportValue
+            Fn::Sub: "${ProjectPrefix}-RedisEndpoint"
+          ELASTICACHE_REDIS_PORT: !ImportValue
+            Fn::Sub: "${ProjectPrefix}-RedisPort"
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName

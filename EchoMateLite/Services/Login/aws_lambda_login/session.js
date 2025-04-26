@@ -5,8 +5,8 @@ const Redis = require('ioredis');
 
 // Initialize Redis client
 const redis = new Redis({
-  host: process.env.ELASTICACHE_ENDPOINT,
-  port: 6379
+  host: process.env.ELASTICACHE_REDIS_ENDPOINT,
+  port: process.env.ELASTICACHE_REDIS_PORT
 });
 
 // Function to save Cognito token to ElastiCache
