@@ -27,16 +27,15 @@ Resources:
     Properties:
       Description: Subnet group for Redis cluster
       SubnetIds:
-        - !ImportValue
-          Fn::Sub: "${ProjectPrefix}-PrivateSubnet1-${Enviroment}"
-        - !ImportValue
-          Fn::Sub: "${ProjectPrefix}-PrivateSubnet2-${Enviroment}"
+        - Fn::ImportValue: !Sub "${ProjectPrefix}-PrivateSubnet1-${Environment}"
+        - Fn::ImportValue: !Sub "${ProjectPrefix}-PrivateSubnet2-${Environment}"
 
   EmlRedisSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for Redis cluster
-      VpcId: !ImportValue "${ProjectPrefix}-VPCID-${Environment}"
+      VpcId:
+        Fn::ImportValue: !Sub "${ProjectPrefix}-VPCID-${Environment}"
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 6379
