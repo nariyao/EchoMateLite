@@ -1,0 +1,11 @@
+template-file-path: EchoMateLite/CloudFormation/EML-Dev-Env/EML-EC-S3.yml
+parameters:
+  ProjectName: EchoMateLite
+  ProjectPrefix: EML
+  BucketName: eml-storage-bucket
+  Environment: dev
+tag:
+  - Name: "EML-EC-S3"
+  - Environment: "dev"
+  - Project: "EchoMateLite"
+  - Owner: "EML"

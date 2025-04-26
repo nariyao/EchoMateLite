@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Template to create ElastiCache Redis and S3 bucket"
+
+Parameters:
+  ProjectName:
+    Type: string
+    Description: "Name of the project"
+    Default: EchoMateLite
+  ProjectPrefix:
+    Type: String
+    Description: "Project prefix for this stack"
+    Default: "eml"
+  Environment:
+    Type: String
+    Description: "Environment name"
+    Default: "dev"
+    AllowedValues:
+      - "dev"
+      - "prod"
+  BucketName:
+    Type: String
+    Description: "Name of the S3 bucket"
+
+Resources:
+  EmlRedisSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Subnet group for Redis cluster
+      SubnetIds:
+        - !ImportValue
+          Fn::Sub: "${ProjectPrefix}-PrivateSubnet1-${Enviroment}"
+        - !ImportValue
+          Fn::Sub: "${ProjectPrefix}-PrivateSubnet2-${Enviroment}"
+
+  EmlRedisSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Redis cluster
+      VpcId: !ImportValue "${ProjectPrefix}-VPCID-${Environment}"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          CidrIp: 0.0.0.0/0
+
+  EmlRedisCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      Engine: redis
+      CacheNodeType: cache.t3.micro
+      NumCacheNodes: 1
+      VpcSecurityGroupIds:
+        - !Ref EmlRedisSecurityGroup
+      CacheSubnetGroupName: !Ref EmlRedisSubnetGroup
+      Port: 6379
+
+  EmlS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+Outputs:
+  EmlRedisEndpoint:
+    Description: Redis cluster endpoint
+    Value: !GetAtt EmlRedisCluster.RedisEndpoint.Address
+    Export:
+      Name: !Sub "${ProjectPrefix}-RedisEndpoint"
+  EmlS3BucketName:
+    Description: Name of created S3 bucket
+    Value: !Ref EmlS3Bucket
+    Export:
+      Name: !Sub "${ProjectPrefix}-Storage"
