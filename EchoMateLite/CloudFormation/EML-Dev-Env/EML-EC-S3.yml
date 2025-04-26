@@ -71,6 +71,11 @@ Outputs:
     Value: !GetAtt EmlRedisCluster.RedisEndpoint.Address
     Export:
       Name: !Sub "${ProjectPrefix}-RedisEndpoint"
+  EmlRedisPort:
+    Description: Redis cluster port
+    Value: 6379
+    Export:
+      Name: !Sub "${ProjectPrefix}-RedisPort"
   EmlS3BucketName:
     Description: Name of created S3 bucket
     Value: !Ref EmlS3Bucket
