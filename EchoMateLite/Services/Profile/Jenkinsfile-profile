@@ -12,7 +12,7 @@ pipeline {
         AWS_ARTIFACTS_BUCKET = "eml-artifacts-bucket"
         AWS_REGION = "us-east-1"
         SOURCE = "EchoMateLite/Services/Profile"
-        LAMBDA_DIR = "aws_lambda_Profile"
+        LAMBDA_DIR = "aws_lambda_profile"
 
     }
     stages {
