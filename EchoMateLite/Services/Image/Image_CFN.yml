@@ -1,0 +1,184 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Lambda function with API Gateway trigger and S3 source code"
+
+Parameters:
+  S3BucketName:
+    Type: String
+    Description: Name of S3 bucket containing Lambda source code
+  S3Key:
+    Type: String
+    Description: S3 key for Lambda source code zip file
+  ProjectName:
+    Type: String
+    Description: Name of the project
+  ProjectPrefix:
+    Type: String
+    Description: Name of the project prefix
+  Environment:
+    Type: String
+    Description: Environment name
+    AllowedValues:
+      - dev
+      - prod
+
+Resources:
+  EmlImageLambdaExecutionRole:
+    Type: AWS::IAM::Role 
+    Properties:
+      RoleName: !Sub "${ProjectPrefix}-ImageLambdaExecutionRole"
+      Description: Role for Lambda execution
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+      - PolicyName: DynamoDBAccess
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource: 
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Eml-*"       
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/EML-*"       
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/eml-*"       
+      - PolicyName: S3Access
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+                - s3:DeleteObject
+                - s3:ListBucket
+                - s3:ListObjects
+                - s3:ListObjectVersions
+                - s3:ListMultipartUploadParts
+              Resource: "*"
+      - PolicyName: CloudWatchAccess
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+      - PolicyName: InvokeLambda
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+              Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+  EmlImageLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${ProjectPrefix}-Image-function"
+      Handler: index.handler
+      Description: Lambda function for EML Images
+      Code:
+        S3Bucket: !Ref S3BucketName
+        S3Key: !Ref S3Key
+      Handler: index.handler
+      Role: !GetAtt EmlImageLambdaExecutionRole.Arn
+      Runtime: nodejs22.x
+      Timeout: 30
+      MemorySize: 128
+      Environment:
+        Variables:
+          PROJECT_NAME: !Ref ProjectName
+          PROJECT_PREFIX: !Ref ProjectPrefix
+          ENVIRONMENT: !Ref Environment
+          MY_AWS_REGION: !Ref AWS::Region
+          DYNAMODB_USER_DETAILS: !ImportValue
+            Fn::Sub: "${ProjectPrefix}-DynamoDBTableForUserDetails"
+          DYNAMODB_IMAGE_DETAILS: !ImportValue
+            Fn::Sub: "${ProjectPrefix}-DynamoDBTableForImageDetails"
+          S3_BUCKET_NAME: !ImportValue
+            Fn::Sub: "${ProjectPrefix}-Storage"
+          AUTH_LAMBDA_FUNCTION_NAME: !ImportValue
+            Fn::Sub: "${ProjectPrefix}-AuthFunctionName"
+      Tags:
+        - Key: ProjectName
+          Value: !Ref ProjectName
+        - Key: ProjectPrefix
+          Value: !Ref ProjectPrefix
+        - Key: Environment
+          Value: !Ref Environment
+
+  # API Gateway resource for Image
+  EmlApiGatewayImageResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !ImportValue eml-ApiResourceId
+      PathPart: "Image"
+      RestApiId: !ImportValue eml-RestApiId
+
+  # API Gateway method for Image
+  EmlApiGatewayImageMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      ResourceId: !Ref EmlApiGatewayImageResource
+      RestApiId: !ImportValue eml-RestApiId
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EmlImageLambdaFunction.Arn}/invocations
+
+  # API Gateway deployment
+  EmlApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - EmlApiGatewayImageMethod
+    Properties:
+      RestApiId: !ImportValue eml-RestApiId
+      StageName: !Ref Environment
+
+  # API Gateway permission for Lambda function
+  EmlLambdaApiGatewayPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref EmlImageLambdaFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayID}/*/POST/*
+        - ApiGatewayID: !ImportValue eml-RestApiId
+
+Outputs:
+  EmlApiEndpointForImage:
+    Description: API Gateway endpoint URL
+    Value: !Sub
+      - https://${ApiGatewayID}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/api/Image
+      - ApiGatewayID: !ImportValue eml-RestApiId
+    Export:
+      Name: !Sub "${ProjectPrefix}-ImageEndpoint"
+  EmlLambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt EmlImageLambdaFunction.Arn
+    Export:
+      Name: !Sub "${ProjectPrefix}-ImageFunctionArn"
+  EmlLambdaFunctionName:
+    Description: Name of the Lambda function
+    Value: !Ref EmlImageLambdaFunction
+    Export:
+      Name: !Sub "${ProjectPrefix}-ImageFunctionName"

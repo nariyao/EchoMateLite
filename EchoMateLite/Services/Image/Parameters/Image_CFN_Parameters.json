@@ -1,0 +1,22 @@
+[
+    {
+        "ParameterKey": "ProjectName",
+        "ParameterValue": "EchoMateLite"
+    },
+    {
+        "ParameterKey": "ProjectPrefix",
+        "ParameterValue": "eml"
+    },
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "dev"
+    },
+    {
+        "ParameterKey": "S3BucketName",
+        "ParameterValue": "eml-artifacts-bucket"
+    },
+    {
+        "ParameterKey": "S3Key",
+        "ParameterValue": "Services/Image/aws_lambda_image.zip"
+    }
+]
