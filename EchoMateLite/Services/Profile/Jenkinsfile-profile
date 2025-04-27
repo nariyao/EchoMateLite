@@ -1,0 +1,102 @@
+@Library ("EchoMateLite@services") _
+
+pipeline {
+    agent any
+    tools {
+        nodejs "22.14"
+    }
+    environment {
+        PROJECT_NAME = 'EchoMateLite'
+        BUILD_NUMBER = "${env.BUILD_ID}"
+        PROJECT_PREFIX = "eml"
+        AWS_ARTIFACTS_BUCKET = "eml-artifacts-bucket"
+        AWS_REGION = "us-east-1"
+        SOURCE = "EchoMateLite/Services/Profile"
+        LAMBDA_DIR = "aws_lambda_Profile"
+
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build') {
+            steps {
+                dir("${SOURCE}") {
+                    script {
+                        sh """
+                            echo "installing dependencies..."
+                            cd ${LAMBDA_DIR}
+                            npm install
+                            echo "installing dependencies done..."
+                            echo "creating zip file..."
+                            zip -r ../${LAMBDA_DIR}.zip ./*
+                            echo "creating zip file done..."
+                        """
+                    }
+                }
+            }
+        }
+        stage('Upload to S3') {
+            steps {
+                sh "aws s3 cp ${SOURCE}/${LAMBDA_DIR}.zip s3://${AWS_ARTIFACTS_BUCKET}/Services/Profile/${LAMBDA_DIR}.zip --region ${AWS_REGION}"
+            }
+        } 
+        stage('Validate Templates') {
+            parallel {
+                stage('Profile CFN') {
+                    steps {
+                        script {
+                            isCFNTemplateValid("${SOURCE}", 'Profile_CFN.yml')
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps{
+                echo "Deploying Profile CFN Stack..."
+                deployCFNStack('./EchoMateLite/Services/Profile', 'Profile-CFN', 'Profile_CFN.yml', 'Parameters/Profile_CFN_Parameters.json', "CAPABILITY_NAMED_IAM")
+                echo "Deploying Profile CFN Stack done..."
+            }
+        }
+        stage("Post-Deployment Validation") {
+            parallel {
+                stage("Varify Profile CFN"){
+                    steps{
+                        echo "Post deployment varification for Profile CFN..."
+                        script {
+                            def stackName = "${env.PROJECT_PREFIX}-Profile-CFN"
+                            def result = sh(script: "aws cloudformation describe-stacks --stack-name ${stackName} --query 'Stacks[0].StackStatus' --output text", returnStdout: true).trim()
+                            if (result != 'CREATE_COMPLETE' && result != 'UPDATE_COMPLETE') {
+                                error("Post deployment validation failed for stack ${stackName}. Current status: ${result}")
+                            } else {
+                                echo "Post deployment validation successful for stack ${stackName}. Current status: ${result}"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                echo "Cleaning up..."
+                deleteDir()
+            }
+        }
+        success {
+            script {
+                echo "Build completed successfully!"
+            }
+        }
+        failure {
+            script {
+                echo "Build failed!"
+            }
+        }
+    }
+}
