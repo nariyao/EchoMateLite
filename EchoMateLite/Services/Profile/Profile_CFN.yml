@@ -114,7 +114,7 @@ Resources:
           S3_BUCKET_NAME: !ImportValue
             Fn::Sub: "${ProjectPrefix}-Storage"
           AUTH_LAMBDA_FUNCTION_NAME: !ImportValue
-            Fn::Sub: "${ProjectPrefix}-eml-AuthFunctionName"
+            Fn::Sub: "${ProjectPrefix}-AuthFunctionName"
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
