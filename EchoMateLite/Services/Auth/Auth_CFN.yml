@@ -83,3 +83,8 @@ Outputs:
     Value: !GetAtt AuthFunction.Arn
     Export:
       Name: !Sub "${ProjectPrefix}-AuthFunctionArn"
+  AuthFunctionName:
+    Description: Name of the Auth Lambda function
+    Value: !Ref AuthFunction
+    Export:
+      Name: !Sub "${ProjectPrefix}-AuthFunctionName"
