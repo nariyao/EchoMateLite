@@ -62,6 +62,9 @@ Resources:
           USER_POOL_ID: !ImportValue
             Fn::Sub: "${ProjectPrefix}-UserPoolId"
           MY_AWS_REGION: !Ref AWS::Region
+          DYNAMO_DB_TABLE_NAME: !ImportValue
+            Fn::Sub: "${ProjectPrefix}-DynamoDBTableForUserDetails"
+
       Tags:
         - Key: ProjectName
           Value: !Ref ProjectName
