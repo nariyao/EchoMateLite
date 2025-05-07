@@ -8,8 +8,12 @@ export default Register = async (event) => {
     const clientId = process.env.CLIENT_ID;
     const email = JSON.parse(event.body).email;
     const password = JSON.parse(event.body).password;
-    const email = event.email;
-    
+
+    const register = JSON.parse(event.body).userRegister;
+    const userDetails = JSON.parse(event.body).userDetails;
+
+
+
     const params = {
         ClientId: clientId,
         UserPoolId: userPoolId,
@@ -22,13 +26,18 @@ export default Register = async (event) => {
             }
         ]
     };
-    
+
     try {
         const response = await cognito.signUp(params).promise();
+        const userRes = await uploadUserDetails(userDetails);
+        if (!userRes.statusCode !== 200) {
+            throw new Error(userRes.message);
+        }
         resData = {
             UserConfirmed: response.UserConfirmed,
             UserSub: response.UserSub,
-            UserEmail: response.UserAttributes.find(attr => attr.Name === 'email').Value
+            UserEmail: response.UserAttributes.find(attr => attr.Name === 'email').Value,
+            userDB: userRes.body
         };
         if (response.UserConfirmed) {
             return {
