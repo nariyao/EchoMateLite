@@ -8,3 +8,14 @@
     flex-flow: column nowrap;
     gap: 10px
 }
+
+.error{
+    padding: 10px;
+    border: 2px solid red;
+    border-radius: 10px;
+    margin: 10px;
+    background-color: rgb(228, 140, 140);
+    color: rgb(197, 2, 2);
+    font-weight: bolder;
+    box-shadow: 0 0 2px 2px rgb(197, 2, 2);
+}

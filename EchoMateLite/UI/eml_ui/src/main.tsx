@@ -6,7 +6,7 @@ import App from './App.tsx'
 
 
 // Set base URL from environment variable or fallback to production URL
-axios.defaults.baseURL = import.meta.env.VITE_API_GATEWAY || "https://api.example.com"
+axios.defaults.baseURL = import.meta.env.VITE_API_GATEWAY || "https://ndq6wxjlm6.execute-api.us-east-1.amazonaws.com/dev/api"
 axios.defaults.withCredentials = true
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 

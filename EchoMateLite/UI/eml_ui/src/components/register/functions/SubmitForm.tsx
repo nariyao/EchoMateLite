@@ -1,11 +1,35 @@
-import { FormData } from "../iRegister";
+import { FormData, IUserRegister } from "../iRegister";
 import axios from "axios";
 import { useState } from 'react';
+import { } from "../iRegister";
 
-const baseURL = import.meta.env.EML_API_URL;
+const formateFormData = (formData: FormData): IUserRegister => {
+    return {
+        userRegister: {
+            email: formData.email,
+            password: formData.password
+        },
+        userDetails: {
+            first_name: formData.firstName,
+            middle_name: formData.middleName,
+            last_name: formData.lastName,
+            email: formData.email,
+            phone: formData.phone,
+            dob: formData.dob,
+            address: {
+                line1: formData.line1,
+                line2: formData.line2,
+                city: formData.city,
+                state: formData.state,
+                country: formData.country
+            }
+        }
+    };
+};
 
-const useSubmitForm = (initialData: FormData) => {
-    const [formData] = useState<FormData>(initialData);
+const SubmitForm = (initialData: FormData) => {
+
+    const formData = formateFormData(initialData);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -15,7 +39,6 @@ const useSubmitForm = (initialData: FormData) => {
             setError(null);
 
             const response = await axios.post('/auth/register', formData, {
-                baseURL,
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -41,4 +64,4 @@ const useSubmitForm = (initialData: FormData) => {
     };
 };
 
-export default useSubmitForm;
+export default SubmitForm;

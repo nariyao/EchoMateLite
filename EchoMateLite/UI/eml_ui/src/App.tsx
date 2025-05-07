@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy } from "react";
 import "./App.css";
 import NavBar from "./components/navigation/navbar";
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -58,12 +58,10 @@ const App: React.FC = () => {
             <Route
               path="/"
               element={
-                // <AuthGuard>
-                <>
+                <AuthGuard>
                   <NavBar />
                   <Outlet />
-                </>
-                // </AuthGuard>
+                </AuthGuard>
               }
             >
               <Route index element={<Feeds />} />
@@ -88,7 +86,7 @@ const App: React.FC = () => {
           </Routes>
         </Suspense>
       </BrowserRouter>
-    </ErrorBoundary>
+    </ErrorBoundary >
   );
 };
 

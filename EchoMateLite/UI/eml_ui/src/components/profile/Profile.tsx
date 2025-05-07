@@ -6,7 +6,6 @@ import Posts from '../posts/Posts';
 import useGetPosts from '../posts/hooks/useGetPosts';
 import { Post } from '../posts/iPosts';
 import UserProfile from './UserProfile';
-import { IUser } from './iProfile';
 
 const Profile: React.FC = () => {
   const { id } = useParams();

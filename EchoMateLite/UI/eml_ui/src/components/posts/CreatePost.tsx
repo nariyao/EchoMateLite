@@ -92,6 +92,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
         images: images.map(img => img.file)
       });
 
+
       // Reset form
       setMessage('');
       setImages([]);
@@ -168,7 +169,7 @@ const CreatePost: React.FC<CreatePostProps> = ({
                 aria-label="Remove image"
                 disabled={isSubmitting}
               >
-                ×
+                x
               </button>
             </div>
           ))}

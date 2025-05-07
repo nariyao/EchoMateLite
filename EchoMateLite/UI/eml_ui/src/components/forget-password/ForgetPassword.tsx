@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from "react";
-import style from "./ForgetPassword.module.css";
+import style from "./forgetpassword.module.css";
 
 const ForgetPassword: React.FC = () => {
   const [email, setEmail] = useState<string>("");

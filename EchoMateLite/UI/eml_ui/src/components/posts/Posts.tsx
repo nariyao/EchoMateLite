@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import style from "./posts.module.css";
-import { Post, PostsProps } from "./iPosts";
+import { PostsProps } from "./iPosts";
 
 // Optimized date formatter
 const formatDateTime = (dateTime: string): string => {
