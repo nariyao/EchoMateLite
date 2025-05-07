@@ -1,0 +1,15 @@
+.search_bar{
+    display: flex;
+    flex-flow: row;
+    gap: 0;
+    height: 40px;
+    width: 40%;
+}
+.search_bar > input{
+    width: 90%;
+    border-radius: 5px 0 0 5px;
+}
+.search_bar button{
+    background-color: #05ffff9c;
+    border-radius: 0 5px 5px 0;
+}

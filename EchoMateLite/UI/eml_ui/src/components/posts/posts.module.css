@@ -1,0 +1,99 @@
+.container {
+  border-radius: 8px;
+  padding: 16px;
+  background: #221747;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.deleted {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.post_header{
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.author_link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+.post_author_name {
+  display: flex;
+  flex-flow: column nowrap;
+  text-align: start;
+  margin-left: 10px;
+}
+.author_link h3{
+  margin: 0;
+}
+.author_img img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.post_date_time{
+  font-size: 10px;
+}
+
+.post_image {
+  margin: 16px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.post_image_item {
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+
+.post_actions{
+  border-top: 1px solid #e0e0e0;
+  justify-items: center;
+}
+
+.like_button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.like_button:hover {
+  color: #007bff;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .container,
+  .post_image_item,
+  .like_button {
+    transition: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+

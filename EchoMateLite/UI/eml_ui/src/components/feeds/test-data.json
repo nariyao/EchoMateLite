@@ -1,0 +1,158 @@
+[
+    {
+        "PostId": "1",
+        "UserDetails": {
+            "UserId": "101",
+            "Name": "John Doe",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T10:00:00Z",
+        "Likes": 15,
+        "Message": "Exploring the world through photography!",
+        "imageIDs": [
+            "img123",
+            "img124"
+        ],
+        "isDeleted": false
+    },
+    {
+        "PostId": "2",
+        "UserDetails": {
+            "UserId": "102",
+            "Name": "Jane Smith",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T11:30:00Z",
+        "Likes": 22,
+        "Message": "Just finished a great book—highly recommend!",
+        "imageIDs": [
+            "img125"
+        ],
+        "isDeleted": false
+    },
+    {
+        "PostId": "3",
+        "UserDetails": {
+            "UserId": "103",
+            "Name": "Michael Lee",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T12:45:00Z",
+        "Likes": 30,
+        "Message": "Sunsets are magical, aren't they?",
+        "imageIDs": [
+            "img126",
+            "img127",
+            "img128"
+        ],
+        "isDeleted": false
+    },
+    {
+        "PostId": "4",
+        "UserDetails": {
+            "UserId": "104",
+            "Name": "Alice Johnson",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T14:10:00Z",
+        "Likes": 18,
+        "Message": "Trying out a new recipe today!",
+        "imageIDs": [
+            "img129"
+        ],
+        "isDeleted": false
+    },
+    {
+        "PostId": "5",
+        "UserDetails": {
+            "UserId": "105",
+            "Name": "Chris Brown",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T15:20:00Z",
+        "Likes": 40,
+        "Message": "Exploring hidden travel gems!",
+        "imageIDs": [
+            "img130",
+            "img131"
+        ],
+        "isDeleted": false
+    },
+    {
+        "PostId": "6",
+        "UserDetails": {
+            "UserId": "106",
+            "Name": "Emma Wilson",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T16:35:00Z",
+        "Likes": 28,
+        "Message": "Some coding tips for beginners!",
+        "imageIDs": [
+            "img132"
+        ],
+        "isDeleted": false
+    },
+    {
+        "PostId": "7",
+        "UserDetails": {
+            "UserId": "107",
+            "Name": "Sophia Davis",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T17:50:00Z",
+        "Likes": 35,
+        "Message": "Fitness motivation for today!",
+        "imageIDs": [
+            "img133",
+            "img134"
+        ],
+        "isDeleted": false
+    },
+    {
+        "PostId": "8",
+        "UserDetails": {
+            "UserId": "108",
+            "Name": "Daniel White",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T18:10:00Z",
+        "Likes": 20,
+        "Message": "Practicing mindfulness every day.",
+        "imageIDs": [
+            "img135"
+        ],
+        "isDeleted": false
+    },
+    {
+        "PostId": "9",
+        "UserDetails": {
+            "UserId": "109",
+            "Name": "Olivia Clark",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T19:45:00Z",
+        "Likes": 38,
+        "Message": "Books that changed my perspective.",
+        "imageIDs": [
+            "img136",
+            "img137"
+        ],
+        "isDeleted": false
+    },
+    {
+        "PostId": "10",
+        "UserDetails": {
+            "UserId": "110",
+            "Name": "Ethan Walker",
+            "ProfileImage": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        },
+        "DateTime": "2025-05-06T20:30:00Z",
+        "Likes": 45,
+        "Message": "The future of artificial intelligence is exciting!",
+        "imageIDs": [
+            "img138"
+        ],
+        "isDeleted": false
+    }
+]

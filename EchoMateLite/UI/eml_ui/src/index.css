@@ -1,11 +1,11 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #080218;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -25,7 +25,6 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -44,15 +43,62 @@ button {
   font-family: inherit;
   background-color: #1a1a1a;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  color: #080b4d;
+  background-color: #babeff;
+  box-shadow: 0 0 3px 1px #00ccff;
 }
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+form a {
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 10px;
+}
+form section {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 20px;
+}
+form div {
+  width: 100%;
+  font-size: 1rem;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 10px;
+  text-align: start;
+}
+input {
+  font: inherit;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+}
+input:focus {
+  border-color: #535bf2;
+  box-shadow: 0 0 5px 2px #00ccff;
+}
+.input:invalid {
+  border-color: #f00;
+}
+
+.error {
+  color: red;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+
+
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -64,5 +110,12 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+
+@media screen and (max-width: 968px) {
+  form section{
+    flex-direction: column;
   }
 }

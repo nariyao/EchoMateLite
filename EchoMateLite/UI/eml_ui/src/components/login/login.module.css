@@ -1,0 +1,28 @@
+.login{
+  height: 100vh;
+  display: flex;
+  margin: auto;
+  align-items: center;
+}
+.container {
+  width: 26rem;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  border: 2px solid #ccc;
+  border-radius: 20px;
+  box-shadow: 0 0 5px 2px #00ccff;
+  align-self: center;
+}
+.error {
+  color: red;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    width: 80vw;
+  }
+}
