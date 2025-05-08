@@ -1,18 +1,18 @@
 const AWS = require('aws-sdk');
 const cognito = new AWS.CognitoIdentityServiceProvider();
 
-export default emailConfirmation= async (event) => {
+export default emailConfirmation = async (event) => {
     const userPoolId = process.env.USER_POOL_ID;
     const clientId = process.env.USER_POOL_CLIENT_ID;
     const email = event.queryStringParameters.email;
     const confirmationCode = JSON.parse(event.body).confirmationCode;
-    
+
     const params = {
         ClientId: clientId,
         email: email,
         ConfirmationCode: confirmationCode
     };
-    
+
     try {
         const response = await cognito.confirmSignUp(params).promise();
         if (response.UserConfirmed) {
@@ -23,6 +23,10 @@ export default emailConfirmation= async (event) => {
     } catch (error) {
         return {
             statusCode: 400,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
             body: JSON.stringify(error.message)
         };
     }
