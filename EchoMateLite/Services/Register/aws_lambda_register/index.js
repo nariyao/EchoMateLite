@@ -1,7 +1,17 @@
 const AWS = require('aws-sdk');
 const cognito = new AWS.CognitoIdentityServiceProvider();
+const corsHeaders = require('./corsHeaders');
 
 exports.handler = async (event) => {
+    // Handle OPTIONS requests (preflight requests)
+    if (event.httpMethod === 'OPTIONS') {
+        return {
+            statusCode: 200,
+            headers: corsHeaders,
+            body: JSON.stringify({ message: 'CORS preflight successful' })
+        };
+    }
+
     switch (event.httpMethod + event.resource) {
         case 'POST/register':
             return Register(event);
@@ -15,15 +25,11 @@ exports.handler = async (event) => {
                 method: event.httpMethod,
                 resource: event.resource
             };
+            return {
+                statusCode: 404,
+                headers: corsHeaders,
+                body: JSON.stringify(bodyData)
+            };
     }
-    return {
-        statusCode: 404,
-        headers: {
-            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS'
-        },
-        body: JSON.stringify(bodyData)
-    };
 }
+
