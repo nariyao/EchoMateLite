@@ -1,9 +1,9 @@
 import { FormData, IUserRegister } from "../iRegister";
 import axios from "axios";
 import { useState } from 'react';
-import { } from "../iRegister";
 
-const formateFormData = (formData: FormData): IUserRegister => {
+// Renamed to follow React hook naming convention
+const formatFormData = (formData: FormData): IUserRegister => {
     return {
         userRegister: {
             email: formData.email,
@@ -27,18 +27,19 @@ const formateFormData = (formData: FormData): IUserRegister => {
     };
 };
 
-const SubmitForm = (initialData: FormData) => {
-
-    const formData = formateFormData(initialData);
+// Renamed to follow React hook naming convention
+const useSubmitForm = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const submitForm = async () => {
+    const submitForm = async (formData: FormData) => {
         try {
             setIsLoading(true);
             setError(null);
 
-            const response = await axios.post('/auth/register', formData, {
+            const formattedData = formatFormData(formData);
+
+            const response = await axios.post('/auth/register', formattedData, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -64,4 +65,4 @@ const SubmitForm = (initialData: FormData) => {
     };
 };
 
-export default SubmitForm;
+export default useSubmitForm;

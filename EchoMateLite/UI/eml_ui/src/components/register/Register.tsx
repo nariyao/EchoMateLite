@@ -1,10 +1,15 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import style from "./register.module.css";
 import { FormData, Errors } from "./iRegister";
-import SubmitForm from "./functions/SubmitForm";
-import ValidateForm from "./functions/ValidateForm";
+import useSubmitForm from "./hooks/useSubmitForm";
+import useValidateForm from "./hooks/useValidateForm";
 
 const Register: React.FC = () => {
+  const [message, setMessage] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Errors>({});
+  const { submitForm, isLoading, error } = useSubmitForm();
+  const validateForm = useValidateForm();
+
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     middleName: "",
@@ -20,36 +25,37 @@ const Register: React.FC = () => {
     password: "",
     confirmPassword: "",
   });
-  const [errors, setErrors] = useState<Errors>({});
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const newErrors = ValidateForm(formData);
+    const newErrors: Errors = validateForm(formData);
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
-      // No errors, proceed with form submission
       console.log("Form submitted successfully", formData);
-      const response = SubmitForm(formData);
+      const response = await submitForm(formData);
+      if (!error) {
+        setMessage(error)
+      }
       console.log("Form submitted successfully", response);
     }
   };
 
   return (
     <div className={style.register}>
-
+      {message && <div className={style.error_msg}>{message}</div>}
       <div className={style.container}>
         <h2>Echo Mate Lite</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} >
           <section>
             <div>
               <label htmlFor='firstName'>
                 {" "}
                 First name<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='firstName'
                 name='firstName'
                 type='text'
@@ -65,7 +71,7 @@ const Register: React.FC = () => {
             <div>
               {" "}
               <label htmlFor='middleName'> Middle name</label>
-              <input
+              <input disabled={isLoading}
                 id='middleName'
                 name='middleName'
                 type='text'
@@ -79,7 +85,7 @@ const Register: React.FC = () => {
                 {" "}
                 Last name<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='lastName'
                 name='lastName'
                 type='text'
@@ -99,7 +105,7 @@ const Register: React.FC = () => {
                 {" "}
                 Email<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='email'
                 name='email'
                 type='email'
@@ -117,7 +123,7 @@ const Register: React.FC = () => {
                 {" "}
                 Phone<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='phone'
                 name='phone'
                 type='tel'
@@ -135,7 +141,7 @@ const Register: React.FC = () => {
                 {" "}
                 Date of birth<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='dob'
                 name='dob'
                 type='date'
@@ -153,7 +159,7 @@ const Register: React.FC = () => {
                 {" "}
                 Line 1<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='line1'
                 name='line1'
                 type='text'
@@ -168,7 +174,7 @@ const Register: React.FC = () => {
             </div>
             <div>
               <label htmlFor='line2'> Line 2</label>
-              <input
+              <input disabled={isLoading}
                 id='line2'
                 name='line2'
                 type='text'
@@ -184,7 +190,7 @@ const Register: React.FC = () => {
                 {" "}
                 City<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='city'
                 name='city'
                 type='text'
@@ -200,7 +206,7 @@ const Register: React.FC = () => {
                 {" "}
                 State<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='state'
                 name='state'
                 type='text'
@@ -218,7 +224,7 @@ const Register: React.FC = () => {
                 {" "}
                 Country<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='country'
                 name='country'
                 type='text'
@@ -238,7 +244,7 @@ const Register: React.FC = () => {
                 {" "}
                 Password<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='password'
                 name='password'
                 type='password'
@@ -256,7 +262,7 @@ const Register: React.FC = () => {
                 {" "}
                 Confirm Password<span className={style.required}> *</span>{" "}
               </label>
-              <input
+              <input disabled={isLoading}
                 id='confirmPassword'
                 name='confirmPassword'
                 type='password'
@@ -271,7 +277,7 @@ const Register: React.FC = () => {
               )}
             </div>
           </section>
-          <button type='submit'>Register</button>
+          <button type='submit' disabled={isLoading}>Register</button>
         </form>
         <p>
           Already have an account? <a href='/auth/login'>Login</a>
