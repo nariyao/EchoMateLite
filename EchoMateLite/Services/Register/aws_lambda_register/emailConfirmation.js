@@ -17,6 +17,16 @@ export default emailConfirmation = async (event) => {
         const response = await cognito.confirmSignUp(params).promise();
         if (response.UserConfirmed) {
             console.log(`User ${email} confirmed successfully.`);
+            return {
+                statusCode: 200,
+                headers: {
+                    'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify(`User ${email} confirmed successfully.`)
+            };
         } else {
             throw new Error(`User ${email} could not be confirmed.`);
         }
@@ -24,6 +34,8 @@ export default emailConfirmation = async (event) => {
         return {
             statusCode: 400,
             headers: {
+                'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
