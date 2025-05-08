@@ -13,6 +13,7 @@ pipeline {
         AWS_REGION = "us-east-1"
         SOURCE = "EchoMateLite/Services/Register"
         LAMBDA_DIR = "aws_lambda_register"
+        S3_KEY = 'Services/Register/aws_lambda_register'
 
     }
     stages {
@@ -59,6 +60,10 @@ pipeline {
                 echo "Deploying Register CFN Stack..."
                 deployCFNStack('./EchoMateLite/Services/Register', 'Register-CFN', 'Register_CFN.yml', 'Parameters/Register_CFN_Parameters.json', "CAPABILITY_NAMED_IAM")
                 echo "Deploying Register CFN Stack done..."
+                echo "Updating lambda code"
+                sh """
+                    aws lambda update-function-code --function-name eml-register-function --s3-bucket ${AWS_ARTIFACTS_BUCKET} --s3-key ${S3_KEY}.zip
+                """
             }
         }
         stage("Post-Deployment Validation") {

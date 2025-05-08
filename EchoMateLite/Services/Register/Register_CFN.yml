@@ -42,7 +42,7 @@ Resources:
   EmlRegisterLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub "${ProjectPrefix}-RegisterLambdaFunction"
+      FunctionName: !Sub "${ProjectPrefix}-register-function"
       Description: Lambda function for EML registration
       Code:
         S3Bucket: !Ref S3BucketName
