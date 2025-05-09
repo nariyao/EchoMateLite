@@ -1,4 +1,3 @@
-
 // Define CORS headers to be used across all responses
 const corsHeaders = {
     'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
@@ -7,4 +6,4 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-export { corsHeaders };
+module.exports = corsHeaders;

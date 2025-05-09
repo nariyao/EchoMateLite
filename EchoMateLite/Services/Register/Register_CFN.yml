@@ -89,8 +89,72 @@ Resources:
       PathPart: "email-verification"
       RestApiId: !ImportValue eml-RestApiId
 
+  # API Gateway OPTIONS method for registration
+  EmlApiGatewayRegisterOPTIONSMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - ResponseTemplates:
+              application/json: "{}"
+            StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Credentials: "'true'"
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      ResourceId: !Ref EmlApiGatewayRegisterResource
+      RestApiId: !ImportValue eml-RestApiId
+      MethodResponses:
+        - ResponseModels:
+            application/json: "Empty"
+          StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: false
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Credentials: false
+
+  # API Gateway OPTIONS method for email verification
+  EmlApiGatewayEmailVerificationOPTIONSMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - ResponseTemplates:
+              application/json: "{}"
+            StatusCode: 200
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+          ResponceParameters:
+            method.response.header.Access-Control-Allow-Origin: "'*'"
+            method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization'"
+            method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+            method.response.header.Access-Control-Allow-Credentials: "'true'"
+      ResourceId: !Ref EmlApiGatewayEmailVerificationResource
+      RestApiId: !ImportValue eml-RestApiId
+      MethodResponses:
+        - ResponseModels:
+            application/json: "Empty"
+          StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: false
+            method.response.header.Access-Control-Allow-Headers: false
+            method.response.header.Access-Control-Allow-Methods: false
+            method.response.header.Access-Control-Allow-Credentials: false
+
   # API Gateway method for registration
-  EmlApiGatewayRegisterMethod:
+  EmlApiGatewayRegisterPOSTMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: POST
@@ -101,28 +165,62 @@ Resources:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EmlRegisterLambdaFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ""
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Credentials: "'true'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Credentials: true
 
-  # API Gateway method for email verification
-  EmlApiGatewayEmailVerificationMethod:
+  # API Gateway method for registration
+  EmlApiGatewayEmailVerificationPOSTMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       HttpMethod: POST
       ResourceId: !Ref EmlApiGatewayEmailVerificationResource
       RestApiId: !ImportValue eml-RestApiId
       AuthorizationType: NONE
-      RequestParameters:
-        method.request.querystring.token: true
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EmlRegisterLambdaFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ""
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Credentials: "'true'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: true
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Credentials: true
 
   # API Gateway deployment
   EmlApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
-      - EmlApiGatewayRegisterMethod
-      - EmlApiGatewayEmailVerificationMethod
+      - EmlApiGatewayRegisterPOSTMethod
+      - EmlApiGatewayEmailVerificationPOSTMethod
     Properties:
       RestApiId: !ImportValue eml-RestApiId
       StageName: !Ref Environment
